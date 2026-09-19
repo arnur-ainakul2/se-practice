@@ -39,45 +39,155 @@ be checked:
 **Prompt sent** (should be exactly one sentence):
 
 ```
+Here's Python code to analyze student marks — it computes averages, highest/lowest scores, pass/fail counts, and grades:
 
+python
+def analyze_marks(students):
+    """
+    students: dict of {name: [marks]}
+    Returns a summary dict per student plus class stats.
+    """
+    PASS_MARK = 40
+
+    def grade(avg):
+        if avg >= 90: return 'A+'
+        elif avg >= 80: return 'A'
+        elif avg >= 70: return 'B'
+        elif avg >= 60: return 'C'
+        elif avg >= 50: return 'D'
+        elif avg >= PASS_MARK: return 'E'
+        else: return 'F'
+
+    results = {}
+    class_averages = []
+
+    for name, marks in students.items():
+        total = sum(marks)
+        avg = total / len(marks)
+        highest = max(marks)
+        lowest = min(marks)
+        status = "Pass" if avg >= PASS_MARK else "Fail"
+
+        results[name] = {
+            "total": total,
+            "average": round(avg, 2),
+            "highest": highest,
+            "lowest": lowest,
+            "grade": grade(avg),
+            "status": status
+        }
+        class_averages.append(avg)
+
+    class_summary = {
+        "class_average": round(sum(class_averages) / len(class_averages), 2),
+        "top_student": max(results, key=lambda n: results[n]["average"]),
+        "pass_count": sum(1 for r in results.values() if r["status"] == "Pass"),
+        "fail_count": sum(1 for r in results.values() if r["status"] == "Fail"),
+    }
+
+    return results, class_summary
+
+
+def print_report(results, class_summary):
+    print(f"{'Name':<12}{'Total':<8}{'Avg':<8}{'High':<6}{'Low':<6}{'Grade':<7}{'Status':<7}")
+    print("-" * 55)
+    for name, r in results.items():
+        print(f"{name:<12}{r['total']:<8}{r['average']:<8}{r['highest']:<6}{r['lowest']:<6}{r['grade']:<7}{r['status']:<7}")
+
+    print("\nClass Summary")
+    print("-" * 30)
+    for k, v in class_summary.items():
+        print(f"{k.replace('_', ' ').title()}: {v}")
+
+
+# Example usage
+if __name__ == "__main__":
+    students = {
+        "Alice": [85, 92, 78, 90],
+        "Bob": [45, 39, 52, 48],
+        "Charlie": [70, 65, 80, 75],
+        "Diana": [95, 98, 91, 100],
+    }
+
+    results, class_summary = analyze_marks(students)
+    print_report(results, class_summary)
+
+This handles any number of students and subjects — just adjust the students dictionary (name → list of marks). Want me to extend it to read marks from a CSV file, or add plotting (e.g. a bar chart of averages)?
 ```
 
 **Assumptions the AI made that I never gave it** — list them, one per line. A data format, a pass
 threshold, a rounding rule, an input method, an invented feature all count.
 
-1.
-2.
-3.
+1. In this prompt ai agent decide use dict or map (key(name)->value(marks)) type as a input. And it built function for analyze. 
+2.Mark grading system is a little bit different than traditional.The pass threshold is 40 (PASS_MARK = 40), and you never specified it.
+The grade bands are 90/80/70/60/50/40, with grades A+, A, B, C, D, E, F. This is an invented, non-traditional scale.
+3.Every student has at least one mark. An empty list would crash with ZeroDivisionError, and so would an empty class.
+4.The class average is the mean of the student averages, not of all marks pooled together.
+5.Only one top student is reported. Ties are silently broken by dict order.
+6.The language is Python, with no input validation, no file or user input, and no error handling.
 
 **Questions it should have asked and did not:**
 
-1.
-2.
+1.What is the pass mark, and what are the grade boundaries? The AI invented a pass threshold of 40 and the bands A+/A/B/C/D/E/F at 90/80/70/60/50/40. Without your answer, the grading logic could be wrong for your school or course, and Pass/Fail depends entirely on it.
+2.What should happen with edge cases: a student with no marks, invalid marks (negative, over 100, not a number), or two students tied for top? The code would crash on an empty list and silently pick whichever tied student comes first.
 
 **Is the function named `analyze_marks` with the required signature?** yes / no — if no, what is it
-called:
+called:No.
+No name or signature was required. The AI invented analyze_marks(students) itself.
 
 **First impression before testing** (one sentence — you will compare this with section 6 later):
 
----
+---The code looks clean and readable and probably works on the sample data, but it rests on many invented assumptions (pass mark 40, grade bands, extra stats) and has no protection against empty lists or invalid marks.
 
 ## 3. Prompt B — structured context
 
 **Prompt sent** (paste it in full, including any substitutions):
 
 ```
+def analyze_marks(marks, pass_mark=50):
+    if not marks:
+        raise ValueError("marks must be a non-empty list")
 
+    for m in marks:
+        if isinstance(m, bool) or not isinstance(m, (int, float)):
+            raise ValueError(f"non-numeric mark: {m!r}")
+        if not 0 <= m <= 100:  # also rejects NaN, since comparisons with NaN are False
+            raise ValueError(f"mark out of range (0-100): {m!r}")
+
+    passed = sum(1 for m in marks if m >= pass_mark)
+    return {
+        "average": sum(marks) / len(marks),
+        "highest": max(marks),
+        "lowest": min(marks),
+        "pass_rate": passed / len(marks) * 100,  # percentage of marks >= pass_mark
+    }
+
+Explanation
+
+Validation first: the function checks for an empty list, then checks every value before computing anything. It raises ValueError with a message naming the offending value.
+Non-numeric values: anything that isn't an int or float is rejected. bool is excluded explicitly, because True and False are technically integers in Python and would otherwise slip through as 1 and 0.
+Range check: 0 <= m <= 100 accepts the full 0 to 100 range inclusive. Because comparisons with NaN are always false, NaN is rejected too.
+Pass rate: this is the percentage of marks that are greater than or equal to pass_mark, so a mark exactly equal to the pass mark counts as a pass. If you'd prefer a fraction (0 to 1), drop the * 100.
+
+Example
+
+python
+analyze_marks([45, 60, 75, 50, 90])
+# {'average': 64.0, 'highest': 90, 'lowest': 45, 'pass_rate': 80.0}
 ```
 
 **What B fixed compared to A:**
 
-1.
-2.
-
+1.Input validation. B rejects empty lists, non-numeric values, bool, out-of-range marks (not 0-100) and NaN, and raises ValueError with a clear message. A crashed on empty lists (ZeroDivisionError) and accepted any garbage.
+2.Configurable pass mark. B has pass_mark=50 as a parameter. A hardcoded PASS_MARK = 40.
+3.Removed invented features. B has no grade bands (A+ to F), no top student, no pass/fail counts, no class stats and no printed report.
 **What B still leaves open:**
 
-1.
-2.
+1.Pass mark default. pass_mark=50 is still invented. It is now changeable, but nobody asked for 50.
+2.Mark scale. The 0-100 range is hardcoded, so marks on another scale (e.g. 0-20 or 0-10) are rejected.
+3.Rounding. Values are not rounded, so average can have many decimals (e.g. 64.33333333333333).
+4.pass_mark is not validated. A negative, over-100, or non-numeric pass_mark is accepted silently.
+5.Error handling style. It raises ValueError and stops at the first bad mark. It does not skip bad values or report all of them.
 
 ---
 
