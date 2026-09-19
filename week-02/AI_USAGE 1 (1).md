@@ -8,19 +8,19 @@ accuracy, testing and integrity of everything you submit, including everything a
 
 | | |
 | --- | --- |
-| Assistant | |
-| Exact model name | |
-| Plan (free / paid) | |
-| Dates of the four runs | |
+| Assistant |Сlaude.ai |
+| Exact model name |Sonnet 5.0 |
+| Plan (free / paid) |FREE |
+| Dates of the four runs |09/20/2026 |
 
 ## 2. What it produced
 
 | Prompt | File it produced | Edited by me afterwards? |
 | --- | --- | --- |
-| A | `week-02/code/prompt_a.*` | no / yes — say what |
-| B | `week-02/code/prompt_b.*` | no / yes — say what |
-| C | `week-02/code/prompt_c.*` | no / yes — say what |
-| D | `week-02/code/prompt_d.*` | no / yes — say what |
+| A | `week-02/code/prompt_a.*` | no |
+| B | `week-02/code/prompt_b.*` | no | 
+| C | `week-02/code/prompt_c.*` | no | 
+| D | `week-02/code/prompt_d.*` | no | 
 
 > The four files must be the **unedited** responses. If you repaired one before testing, say so
 > here. An edited output that is declared costs a fraction of a point; an edited output that is
@@ -30,18 +30,24 @@ accuracy, testing and integrity of everything you submit, including everything a
 
 | Tool | Used for | Which file or section |
 | --- | --- | --- |
-| | e.g. wording the conclusion, writing the runner for a non-Python language | |
+| Claude | Explaining what the checklist questions ask, and translating them into Russian | All sections of `lab-report.md` |
+| Claude | Drafting wording for the assumptions list, the missing-questions list, and the "what B fixed / still leaves open" lists | Sections 1, 4, 5 |
+| Claude | Writing Prompt D | Section 5 |
+| Claude | Formatting the results table and the "what actually happened" lines | Section 6 |
+| Claude | Drafting the scoring table, the words-per-point line, the conclusion and the debrief questions | Sections 7, 8, 9 |
+
 
 Writing your own text with an AI is permitted at Level D **and must be declared here.**
 
 ## 4. Declarations
 
-- **Every prompt was sent in a fresh chat, and the outputs were saved before any editing:** yes / no
-- **The test results in section 6 of `lab-report.md` are real output from real runs:** yes / no
-- **Everything I submitted, I can explain and defend in class:** yes / no
+- **Every prompt was sent in a fresh chat, and the outputs were saved before any editing:** yes
+- **The test results in section 6 of `lab-report.md` are real output from real runs:** yes 
+- **Everything I submitted, I can explain and defend in class:** yes 
 
 **Anything I accepted from the AI without fully understanding it:**
-<!-- Name the file and the part. This is a normal answer. -->
+- `prompt_d.py`: I did not fully understand why `math.fsum` is used instead of `sum`, or how `subTest` works in the tests.
+- `lab-report.md` sections 7-8: the word counts and rubric scores were drafted by Claude and I checked them only partly
 
-Signed: <your name>
-Date:
+Signed: Ainakul Arnur
+Date: 09/20/2026
