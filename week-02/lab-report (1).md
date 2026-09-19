@@ -196,45 +196,84 @@ analyze_marks([45, 60, 75, 50, 90])
 **What I appended to Prompt B:**
 
 ```
-
+I appended a worked example (analyze_marks([40, 60, 80], 50) gives average 60, highest 80, lowest 40, pass_rate 66.67), a list of required tests (one mark, decimals, custom pass_mark, empty list, text value, and marks below 0 or above 100), and a requirement to state any remaining assumptions before the code.
 ```
 
 **Tests the AI wrote for itself** — how many, and which situations do they cover?
 
 | Situation | Covered by the AI's tests? |
 | --- | --- |
-| one mark | |
-| decimals | |
-| custom pass_mark | |
-| empty list | |
-| text value | |
-| below 0 / above 100 | |
+| one mark | Yes (test_one_mark_pass, test_one_mark_fail)|
+| decimals | Yes (test_decimals)|
+| custom pass_mark |Yes (test_custom_pass_mark) |
+| empty list |Yes (test_empty_list) |
+| text value |Yes (test_text_value) |
+| below 0 / above 100 |Yes (test_below_zero, test_above_100) |
 
 **Do the AI's own tests pass against the AI's own code?** yes / no
+Yes
 
 **Do they agree with the harness in section 6?** yes / no — if no, where do they disagree:
 
+
 **Assumptions C stated explicitly before the code:**
 
----
+---1.pass_rate is a percentage (0-100), rounded to 2 decimals, and a mark passes if it is >= pass_mark.
+2.average is also rounded to 2 decimals (so 60 comes back as 60.0), while highest and lowest are returned as given.
+3.bool is rejected as non-numeric (it is technically an int in Python), and NaN/inf are rejected as out of range.
+4.pass_mark is validated the same way as marks (numeric, 0-100).
+5.marks must be a list or tuple; anything else raises ValueError.
 
 ## 5. Prompt D — my combined prompt
 
 **The complete prompt I wrote** (one message, sent to a fresh chat):
 
 ```
+You are a Python developer. Implement analyze_marks(marks, pass_mark=50) using only the Python standard library (no external libraries).
 
+INPUT
+- marks: a list or tuple of numbers (int or float), each from 0 to 100 inclusive. Any other container type raises ValueError.
+- pass_mark: a number from 0 to 100 inclusive, default 50. It is validated the same way as marks.
+- All marks have equal weight. Do not add grades, student names, class statistics, printing, or any other feature I did not ask for.
+
+RETURN
+A dict with exactly these keys:
+- "average": mean of marks, rounded to 2 decimals (so 60 is returned as 60.0)
+- "highest": the largest mark, returned as given (not rounded)
+- "lowest": the smallest mark, returned as given (not rounded)
+- "pass_rate": percentage (0-100) of marks that are >= pass_mark, rounded to 2 decimals. A mark exactly equal to pass_mark counts as a pass.
+
+VALIDATION (raise ValueError with a clear message naming the bad value)
+- empty list or tuple
+- non-numeric values, including strings such as "60" (do not convert them)
+- bool values (True/False) are rejected as non-numeric
+- NaN and inf are rejected
+- values below 0 or above 100
+- invalid pass_mark (non-numeric, bool, NaN, inf, or outside 0-100)
+- Validate everything before computing anything. Stop at the first invalid value.
+
+WORKED EXAMPLE
+analyze_marks([40, 60, 80], 50) -> {"average": 60.0, "highest": 80, "lowest": 40, "pass_rate": 66.67}
+
+TESTS (use unittest, and make them runnable with `python file.py`)
+Include tests for: the worked example, one mark (pass and fail), decimals (e.g. [50.5, 49.5, 70.25]), custom pass_mark (e.g. 70 and 40), empty list, text value (e.g. "abc" and "60"), below 0, above 100, boundary values 0 and 100 accepted, bool and NaN rejected, invalid pass_mark, and a non-list input such as a string or dict.
+
+OUTPUT FORMAT
+1. First, a short list of any remaining assumptions you made that are not covered above.
+2. Then one code block with the function and the tests.
+3. Then a short explanation (5 sentences max).
 ```
 
 **What I deliberately added that A, B and C did not have:**
 
-1.
-2.
-3.
+1.Explicit resolutions for every ambiguity found in Parts 2-4. Equal weighting of marks, the default pass_mark=50, the 0-100 scale, pass_rate as a percentage rounded to 2 decimals, and "stop at the first invalid value" are all stated in the prompt instead of being left for the AI to guess.
+2.Exact behavior for tricky inputs. Strings such as "60" must be rejected (not converted), bool and NaN/inf are rejected, pass_mark is validated like marks, and any non-list/tuple input (string, dict, generator, None) raises ValueError.
+3.A ban on invented features and a fixed output format. No grades, names, class stats or printing; the answer must come as assumptions first, then one code block, then a short explanation (5 sentences max). C only asked for assumptions before the code.
 
 **The ambiguity I found in the specification, and how I resolved it inside Prompt D:**
 
 ---
+The specification did not say what pass_rate means, so it could be read as a fraction (0 to 1), as a percentage (0 to 100), or as a pass/fail decision based on the average, and it did not say whether a mark exactly equal to pass_mark passes or how many decimals to return. In Prompt D I resolved it by stating that pass_rate is the percentage (0-100) of marks that are >= pass_mark, rounded to 2 decimals, so a mark equal to pass_mark counts as a pass, and I added the worked example analyze_marks([40, 60, 80], 50) giving pass_rate 66.67 to make the format unambiguous.
 
 ## 6. Test results — the evidence
 
