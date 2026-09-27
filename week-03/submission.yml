@@ -1,0 +1,51 @@
+# week-03/submission.yml — your declaration for this lab.
+#
+# Facts only. Every explanation goes in lab-report.md; nothing here repeats prose.
+# Fill every value. Check it before you push:
+#
+#     python tests/validate_submission.py
+#
+# The validator checks shape, never quality. A green run is the floor, not the grade.
+# If you cannot run Python, fill the file by hand against the comments — a malformed
+# file costs you nothing if the content is there.
+
+schema: 1
+week: "03"
+
+student:
+  name:Ainakul Arnur
+  student_id:24B031609          # as in KBTU records, e.g. 24B031016
+  github:arnur-ainakul2              # your GitHub username, the one that owns the repo
+
+assistant:
+  tool: Claude
+  model: Claude Sonnet 5
+
+counts:
+  user_stories: 7
+  acceptance_criteria_sets: 3   # how many stories you wrote Given/When/Then criteria for
+
+checker:
+  pass: 23
+  fail: 0
+  error: 0
+  commit: 
+
+assumptions:
+  overlap_touching_bookings: not-allowed
+  exactly_two_hours: allowed
+
+traceability:
+  # Use the IDs from requirements/traceability.md. Empty lists are allowed — if you claim full
+  # coverage, the checker and I will test that claim.
+  use_cases_not_covered: []
+  stories_not_traced: []
+
+review_findings:
+  - "US-03 in the raw AI output (explaining why a booking failed) had no distinct value of its own; merged it into US-02's assumption instead of keeping it as a separate story."
+  - "use-cases.puml originally used <<extend>> from Book room and Cancel booking to Send confirmation (UC-06); corrected to <<include>> since confirmation is mandatory on success, not optional."
+  - "use-cases.puml originally included an unjustified <<include>> from Book room to View availability (UC-02 to UC-01); removed it since a student can book without viewing availability first."
+  - "AC-01 in acceptance-criteria.md originally assumed user authentication was required to book/cancel/block; removed the assumption since authentication is explicitly out of scope in the scenario."
+honesty:
+  can_explain_everything_submitted: yes
+  ai_usage_disclosed: yes
