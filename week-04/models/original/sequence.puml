@@ -1,0 +1,54 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam BoxPadding 10
+
+actor "Student" as student
+participant "BookingService" as service
+participant "BookingRepository" as repo
+
+title Sequence Diagram: Book Study Room (US-01 / R1–R4)
+
+student -> service : createBooking(studentId, roomId, startTime, endTime)
+activate service
+
+note over service
+  **Rule R1 Validation:**
+  Check startTime > now
+  Check 0 < duration <= 2 hours
+end note
+
+alt Invalid Time Slot (R1 Violation)
+    service --> student : error("Invalid booking time/duration")
+else Valid Time Slot (R1 Passed)
+    
+    service -> repo : isRoomBlocked(roomId)
+    activate repo
+    repo --> service : blockedStatus
+    deactivate repo
+
+    alt Room is Blocked (R3 Violation)
+        service --> student : error("Room is currently blocked")
+    else Room is Not Blocked (R3 Passed)
+        
+        service -> repo : hasOverlappingBooking(roomId, startTime, endTime)
+        activate repo
+        repo --> service : isOverlapping
+        deactivate repo
+
+        alt Room Has Overlapping Active Booking (R2 Violation)
+            service --> student : error("Room unavailable for selected time slot")
+        else Room is Available (R2 Passed)
+            
+            service -> repo : saveBooking(studentId, roomId, startTime, endTime)
+            activate repo
+            repo --> service : bookingConfirmationDetails
+            deactivate repo
+
+            service --> student : confirmationNotice(bookingId, status="CONFIRMED")
+        end
+    end
+end
+
+deactivate service
+@enduml

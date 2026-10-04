@@ -1,0 +1,62 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class Student {
+  - studentId: String
+  - name: String
+  --
+  + viewAvailability(timeSlot: DateTimeRange): List<Room>
+  + bookRoom(room: Room, timeSlot: DateTimeRange): BookingConfirmation
+  + cancelBooking(booking: Booking): void
+}
+
+class Administrator {
+  - adminId: String
+  - name: String
+  --
+  + blockRoom(room: Room): void
+  + unblockRoom(room: Room): void
+  + reviewUsage(): UsageReport
+}
+
+class Room {
+  - roomId: String
+  - roomName: String
+  - isBlocked: Boolean
+  --
+  + isAvailable(timeSlot: DateTimeRange): Boolean
+  + block(): void
+  + unblock(): void
+}
+
+class Booking {
+  - bookingId: String
+  - startTime: DateTime
+  - durationMinutes: Integer
+  - status: BookingStatus
+  --
+  + validateTimeLimits(): Boolean
+  + overlapsWith(otherTimeSlot: DateTimeRange): Boolean
+  + cancel(): void
+}
+
+class BookingConfirmation {
+  - confirmationNumber: String
+  - issuedAt: DateTime
+  - bookingDetails: String
+  --
+  + printConfirmation(): String
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+' Relationships with Multiplicities
+Student "1" -- "0..*" Booking : creates / owns >
+Room "1" -- "0..*" Booking : reserved for <
+Administrator "1" -- "0..*" Room : manages >
+Booking "1" --> "0..1" BookingConfirmation : produces >
+
+@enduml
