@@ -1,0 +1,38 @@
+@startuml
+skinparam packageStyle rectangle
+left to right direction
+
+actor "Student" as student
+actor "Administrator" as admin
+
+rectangle "Smart Campus System" {
+  
+  package "Booking Management" {
+    usecase "Book Study Room\n(US-01)" as UC_Book
+    usecase "Issue Confirmation\n(US-01 / R4)" as UC_Confirm
+    usecase "View Room Availability\n(US-02)" as UC_View
+    usecase "Cancel Own Booking\n(US-03)" as UC_Cancel
+  }
+
+  package "Room Administration" {
+    usecase "Block Room\n(US-04)" as UC_Block
+    usecase "Unblock Room\n(US-05)" as UC_Unblock
+    usecase "Review Room Usage\n(US-06)" as UC_Review
+  }
+
+}
+
+' Student Associations
+student --> UC_Book
+student --> UC_View
+student --> UC_Cancel
+
+' Administrator Associations
+admin --> UC_Block
+admin --> UC_Unblock
+admin --> UC_Review
+
+' Relationships between Use Cases
+UC_Book .> UC_Confirm : <<include>>
+
+@enduml
