@@ -1,0 +1,52 @@
+# week-04/submission.yml — your declaration for this lab.
+#
+# Facts only. Every explanation goes in lab-report.md; nothing here repeats prose.
+# Fill every value. Check it before you push:
+#
+#     python tests/validate_submission.py
+#
+# The validator checks shape, never quality. A green run is the floor, not the grade.
+# If you cannot run Python, fill the file by hand against the comments — a malformed
+# file costs you nothing if the content is there.
+
+schema: 1
+week: "04"
+
+student:
+  name:Arnur
+  student_id:24b031609          # as in KBTU records, e.g. 24B031016
+  github:arnur-ainakul2              # your GitHub username, the one that owns the repo
+
+assistant:
+  tool:Gemini                # e.g. ChatGPT, Claude, Gemini, DeepSeek, Grok
+  model:Gemini 2.5 Flash               # the exact model name with its version. "ChatGPT" is not a model name.
+
+counts:
+  behaviour_diagram: sequence
+  stories_source: week-03
+  use_cases: 7
+  change_log_rows: 3
+
+checker:
+  pass: 35
+  fail: 2
+  error: 0
+  commit: 656bd33
+  kept_fails: ["CL3", "SQ3"]
+
+assumptions:
+  overlap_touching_bookings: allowed
+  blocking_a_booked_room: keep-bookings
+
+traceability:
+  use_cases_not_traced: []
+  rules_not_shown: []
+
+review_findings:
+  - "System boundary was rectangle 'Smart Campus System'; renamed to rectangle 'Smart Campus Study Room Booking' per system scope."
+  - "Room *-- Booking was a composition; changed to plain association Room 1 -- 0..* Booking because bookings can exist independently of room lifecycle."
+  - "createBooking() in sequence diagram passed endTime parameter; updated to durationMinutes to match Booking entity attribute."
+honesty:
+  originals_unedited: yes
+  can_explain_everything_submitted: yes
+  ai_usage_disclosed: yes
