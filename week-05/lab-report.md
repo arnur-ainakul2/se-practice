@@ -17,7 +17,7 @@ grader find your answers by them. Add rows to any table; never remove its header
 | **Exact** model name | Gemini Flash 3.6 |
 | Language and version | Python 3.14.7 |
 | Path | A | 
-| My Week 04 declaration for touching bookings | allowed / not-allowed / did not submit |
+| My Week 04 declaration for touching bookings | allowed |
 
 <!-- If your Week 04 model said touching bookings are NOT allowed: AC4 now says they are.
      One sentence here on what that changes in your Week 04 diagrams. This is a finding, not a penalty. -->
@@ -29,7 +29,7 @@ grader find your answers by them. Add rows to any table; never remove its header
 **The assistant's plan, pasted unedited:**
 
 ```text
-(paste here)
+Here is the short implementation plan, ordering of checks, assumptions, and suggested boundary cases based strictly on your specification.Implementation Plan & Check OrderTo ensure efficiency and early exits, validation checks should be ordered from simple scalar inputs to iterable interval comparisons:Check AC3 (Room Status): Verify blocked is False.Check AC1 (Basic Time Constraints):Verify 0 <= start < end <= 1440.Verify start > now.Check AC2 (Duration Limit): Verify (end - start) <= 120.Check AC4 (Overlap Check): Iterate through existing bookings (b_start, b_end) and ensure no overlap occurs:Overlap occurs if start < b_end and end > b_start.If any existing interval overlaps, return False.Decision (AC5): If all checks pass without returning False, return True.AssumptionsInput Types: start, end, and now are integers; blocked is a Boolean; existing is an iterable (e.g., list or tuple) of (int, int) tuples.Pre-validated Entrants: Per the contract, now is strictly between 0 and 1439, and all tuples in existing are valid active bookings for the room on the same date.Immutability: Inputs are treated as read-only, ensuring no side effects or mutations to existing.Boundary Cases to TestBoundary ScenarioInputs / ContextExpected OutcomeReasonMinimum valid startstart = now + 1Depends on other ACsstart > now requirement (strict inequality).Same-time bookingstart = nowFalseViolates AC1 (start must be strictly greater than now).Maximum end timeend = 1440 (24:00)Valid if start >= 1320Tests upper limit boundary of AC1.Maximum durationend - start = 120ValidTests exact boundary of AC2.Exceeded durationend - start = 121FalseViolates AC2 limit.Zero/Negative durationstart >= endFalseViolates AC1 (start < end).Endpoint touching (Left)Proposed [100, 120), Existing [80, 100)TrueHalf-open interval [start, end) allows touching endpoints.Endpoint touching (Right)Proposed [100, 120), Existing [120, 140)TrueBoundary touches without overlapping.1-minute overlapProposed [100, 121), Existing [120, 140)FalseOverlaps by 1 minute (120).Enclosing intervalProposed [100, 200), Existing [110, 150)FalseProposed booking completely spans existing booking.Enclosed intervalProposed [110, 150), Existing [100, 200)FalseProposed booking is inside existing booking.Empty existing listexisting = []True (if AC1-AC3 pass)Verifies behavior when no active bookings exist.
 ```
 
 **What the plan invented or changed.** One row for every rule in the plan that is not in the
@@ -38,12 +38,22 @@ row saying which lines of the plan you checked against which AC.
 
 | # | What the plan said | What the contract or the AC says | What I did |
 | --- | --- | --- | --- |
-| 1 | | | |
+| 1 | Checks 1–5 in the plan strictly check `blocked`, `0 <= start < end <= 1440`, `start > now`, `(end - start) <= 120`, and interval overlap `start < b_end and end > b_start`. | Contract & AC1–AC5 require exact status, time range, max 120m duration, non-overlapping intervals, and keeping inputs unchanged. | Checked steps 1–5 against AC1–AC5; kept the entire plan as no extra business rules or invalid constraints were added. |
 
-**Boundary cases the assistant suggested that I kept as tests:**
+---
 
--
+### Boundary cases the assistant suggested that I kept as tests
 
+- **Minimum valid start:** `start = now + 1` (Verify strict inequality `start > now`).
+- **Same-time booking:** `start = now` (Expected: `False`).
+- **Maximum end time:** `end = 1440` (Expected: `True` if within limits).
+- **Maximum duration boundary:** `end - start = 120` (Expected: `True`).
+- **Exceeded duration:** `end - start = 121` (Expected: `False`).
+- **Zero/Negative duration:** `start >= end` (Expected: `False`).
+- **Endpoint touching (Left & Right):** Proposed `[100, 120)` with existing `[80, 100)` or `[120, 140)` (Expected: `True`).
+- **1-minute overlap:** Proposed `[100, 121)` with existing `[120, 140)` (Expected: `False`).
+- **Enclosing & Enclosed intervals:** Overlapping fully inside or surrounding an existing booking (Expected: `False`).
+- **Empty existing list:** `existing = []` (Expected: `True` if AC1–AC3 hold).
 ---
 
 ## 3. Task 2 — the first version (v1), read before it was run
