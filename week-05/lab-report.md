@@ -81,18 +81,22 @@ Base input for every row unless the row says otherwise: `now=540, blocked=False,
 
 | # | Test name | Request (start, end) | What differs from the base input | Expected | AC | Result on v1 | Result on final |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | | | | | | | |
-| 2 | | | | | | | |
-| 3 | | | | | | | |
-| 4 | | | | | | | |
-| 5 | | | | | | | |
-| 6 | | | | | | | |
-| 7 | | | | | | | |
-| 8 | | | | | | | |
-| 9 | | | | | | | |
-| 10 | | | | | | | |
-| 11 | | | | | | | |
-
+| 1 | `test_touching_end_is_allowed` | `(660, 720)` | Base input | True | AC4 | PASS | PASS |
+| 2 | `test_partial_overlap_rejected` | `(630, 690)` | Base input | False | AC4 | PASS | PASS |
+| 3 | `test_blocked_room_rejected` | `(660, 720)` | `blocked=True` | False | AC3 | PASS | PASS |
+| 4 | `test_exactly_two_hours_allowed` | `(720, 840)` | Base input | True | AC2 | PASS | PASS |
+| 5 | `test_over_two_hours_rejected` | `(720, 841)` | Base input | False | AC2 | PASS | PASS |
+| 6 | `test_starts_now_rejected` | `(540, 570)` | Base input | False | AC1 | PASS | PASS |
+| 7 | `test_zero_length_duration_rejected` | `(660, 660)` | Base input | False | AC1 | PASS | PASS |
+| 8 | `test_reversed_times_rejected` | `(720, 660)` | Base input | False | AC1 | PASS | PASS |
+| 9 | `test_day_bound_upper_limit_allowed` | `(1320, 1440)` | Base input | True | AC1 | PASS | PASS |
+| 10 | `test_day_bound_exceeded_rejected` | `(1380, 1441)` | Base input | False | AC1 | PASS | PASS |
+| 11 | `test_empty_existing_allowed` | `(660, 720)` | `existing=[]` | True | AC4 | PASS | PASS |
+| 12 | `test_multiple_existing_overlap_rejected` | `(750, 810)` | `existing=[(600, 660), (780, 840)]` | False | AC4 | PASS | PASS |
+| 13 | `test_existing_input_not_mutated` | `(660, 720)` | `existing=[(600, 660), (720, 780)]` | True | AC5 | PASS | PASS |
+| 14 | `test_enclosed_overlap_rejected` | `(615, 645)` | Base input | False | AC4 | PASS | PASS |
+| 15 | `test_enclosing_overlap_spans_existing_rejected` | `(570, 690)` | Base input | False | AC4 | PASS | PASS |
+| 16 | `test_existing_elements_not_mutated_during_checks` | `(630, 690)` | `existing=[(600, 660), (700, 760)]` | False | AC5 | PASS | PASS |
 ---
 
 ## 5. Task 4 — debugging with evidence
