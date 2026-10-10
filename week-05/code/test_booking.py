@@ -72,13 +72,55 @@ class BookingTests(unittest.TestCase):
         self.assertIs(result, False)
 
     def test_existing_elements_not_mutated_during_checks(self):
-        # Specific check for M10: verify tuple integrity and order after calls
-        t1, t2 = (600, 660), (700, 760)
-        existing = [t1, t2]
+        item1 = (600, 660)
+        item2 = (700, 760)
+        existing = [item1, item2]
+
         can_book(630, 690, 540, False, existing)
+
         self.assertEqual(existing, [(600, 660), (700, 760)])
-        self.assertIs(existing[0], t1)
-        self.assertIs(existing[1], t2)
+        self.assertIs(existing[0], item1)
+        self.assertIs(existing[1], item2)
+
+    # --- AC5 (M10): every return path, unsorted inputs of several sizes ---
+
+    @staticmethod
+    def _unsorted_lists():
+        # Deliberately NOT sorted. A hidden sort/reverse/pop/append inside
+        # can_book changes one of these lists and the test notices.
+        return [
+            [(600, 660)],
+            [(900, 960), (600, 660), (720, 780)],
+            [(1100, 1160), (900, 960), (600, 660), (1300, 1360), (720, 780)],
+        ]
+
+    def test_every_return_path_is_a_real_bool_and_input_untouched(self):
+        # (name, start, end, now, blocked, expected)
+        scenarios = [
+            ("accepted",     661,  719, 540, False, True),
+            ("exactly_2h",   780,  900, 540, False, True),
+            ("overlap",      630,  690, 540, False, False),
+            ("blocked",      661,  719, 540, True,  False),
+            ("starts_now",   540,  600, 540, False, False),
+            ("in_the_past",  500,  560, 540, False, False),
+            ("too_long",     960, 1081, 540, False, False),
+            ("reversed",     720,  660, 540, False, False),
+            ("zero_length",  700,  700, 540, False, False),
+            ("beyond_day",  1380, 1441, 540, False, False),
+        ]
+        for name, start, end, now, blocked, expected in scenarios:
+            for existing in self._unsorted_lists():
+                with self.subTest(case=name, existing_size=len(existing)):
+                    snapshot = list(existing)
+                    result = can_book(start, end, now, blocked, existing)
+                    self.assertIs(result, expected)
+                    self.assertEqual(existing, snapshot)
+
+    def test_empty_list_stays_empty_after_an_accepted_booking(self):
+        existing = []
+        result = can_book(660, 720, 540, False, existing)
+        self.assertIs(result, True)
+        self.assertEqual(existing, [])
 
 
 if __name__ == "__main__":
