@@ -58,22 +58,21 @@ row saying which lines of the plan you checked against which AC.
 
 ## 3. Task 2 — the first version (v1), read before it was run
 
-v1 is saved as `code/original/booking_v1.<ext>`, exactly as the assistant returned it: yes / no
+v1 is saved as `code/original/booking_v1.py`, exactly as the assistant returned it: yes
 
 **AC map.** One row per condition in v1. Quote the line.
 
 | # | Line in v1 | AC it implements | Correct as written? If not, why |
 | --- | --- | --- | --- |
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
+| 1 | `if blocked:` | AC3 | Yes. Returns `False` immediately if the room is flagged as blocked. |
+| 2 | `if not (0 <= start < end <= 1440 and start > now):` | AC1 | Yes. Correctly enforces lower/upper bounds, non-zero positive duration, and `start > now`. |
+| 3 | `if (end - start) > 120:` | AC2 | Yes. Correctly restricts maximum booking duration to 120 minutes (2 hours). |
+| 4 | `for b_start, b_end in existing:`<br>`if start < b_end and end > b_start:` | AC4 | Yes. Accurately detects overlaps for half-open intervals `[start, end)` while allowing touching endpoints. |
+| 5 | `return True` | AC5 | Yes. Executes only after all checks pass and leaves `existing` unmodified. |
 
-**Anything in v1 that no AC asks for** (extra validation, a buffer between bookings, logging,
-saving the booking, a different return type):
+**Anything in v1 that no AC asks for** (extra validation, a buffer between bookings, logging, saving the booking, a different return type):
 
--
-
+- None. The assistant adhered strictly to the supplied acceptance criteria without adding extra buffers, logging, input mutations, or unrequested validation logic.
 ---
 
 ## 4. Task 3 — my tests
