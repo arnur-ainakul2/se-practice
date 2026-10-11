@@ -32,32 +32,38 @@
 
 ## 2. Analysis
 
-<!-- 350–400 words. Your answer to the question, the trade-offs, and how it applies to your
-     scenario. Explain at least two engineering decisions and why they fit the scenario. -->
+Generating a study-materials exchange with an AI assistant in hours lowers the cost of the first version, but I do not think it lowers the total cost over the system's life. For instance, an AI can produce a `categorize_file()` or `parse_search_query()` module in seconds, yet the system must then be repaired, changed and protected for years. Course notes based on Sommerville say that maintenance costs after delivery are usually greater than development costs, by a factor that depends on the application, so I use no single percentage.
 
-(write here)
+In my scenario the cost appears after launch. About 800 students use the system and 40 files are uploaded weekly (fictional assumptions). Duplicates, wrong categories and poor search results then need an administrator. If, as an assumption, 10 of the 40 weekly uploads needed repair at 20 minutes each, that would be 3.3 hours of manual work a week; this rate is my assumption, not a measured value. The administrator is an unpaid student, so this is not a cash cost. The real danger is burnout: if repairs pile up, the administrator may stop and students leave. Because categories and file formats change every semester, code regenerated each term can also break unnoticed unless tests check the old behaviour.
+
+The constraints force two engineering decisions. First, with a budget for only one protective measure, I would choose backup. Tests cannot bring back deleted notes, and the main risk is encryption or deletion shortly before an exam. Automated backups can restore the collection after encryption or deletion only if copies are kept offline or apart from the application server and restores are tested. The CISA ransomware guide gives the reason: attackers often look for accessible backups.
+
+Second, I would write acceptance criteria for upload and search before generating code, because this costs team time, not budget. A criterion such as "reject a file whose hash already exists" is testable and removes many duplicates, whichever tool wrote the code. Criteria also allow a regression test each semester when categories change. They do not catch everything: a student who picks the wrong category passes every test, so some repair work remains.
+
+The trade-off is clear: backup protects against rare, severe loss but leaves everyday defects to the administrator. Faster generation lowers cost mainly for prototypes without real users; with real users, requirements, tests and backups decide much of the cost.
 
 ## 3. Review
 
-<!-- 250–300 words. What Prompt B's critique said and what you did with it; your two source
-     checks and your two substantive revisions, each with a reason. Point at the rows of the
-     tables in section 9 ("verification row 2", "change-log row 1"). -->
+Prompt B made five points, and I treated them as claims to test, not as evidence. I accepted point 2: an unpaid administrator's time is not a cash cost, so I write about burnout. I accepted point 3 in part: the cost driver is missing regression tests, not the AI itself, so my second decision is writing acceptance criteria before generating code. I qualified point 1: backups can be encrypted too, which the CISA guide supports, so my text now requires copies kept apart and tested restores (change-log row 3). I qualified point 4: tests cannot catch a student choosing the wrong category, so some repair work remains. I accepted point 5, but for a reason the critique missed (below).
 
-(write here)
+I checked two claims in sources I opened. The draft said backups guarantee data resilience. The CISA #StopRansomware Guide recommends offline, encrypted backups that are tested, because many ransomware variants try to delete or encrypt accessible backups, so I qualified it (verification row 1). The revised draft said maintenance is 60%+ of lifetime cost, citing Sommerville Ch. 1. The course notes I read, based on Sommerville Ch. 9, say maintenance usually costs more than development, by 2 to 100 times depending on the application, with no 60% figure, so I qualified it and removed the percentage (verification row 2, change-log row 4). I did not check the book itself.
+
+The critique called the `can_book` example off-topic. It missed that the story was inaccurate: my Week 05 report shows the assistant's code passed every check unchanged, and the fault my tests first missed was in the checker's faulty version. I replaced it with `categorize_file()` (change-log row 1). I labelled the rate of 10 bad uploads a week as my assumption, because the assistant added it (change-log row 2).
 
 ## 4. Conclusion
 
-<!-- 100–150 words. Your recommendation for the scenario and its main limitation. -->
+For a small student-run study-materials exchange, AI code generation reduces initial development time but does not lower total lifecycle cost. Long-term costs are driven by post-launch repair work, dynamic semester requirements, and severe data loss risks. The team should select automated backups as their single protective measure to ensure disaster recovery during exam periods, while maintaining clear acceptance criteria to validate semester parser updates.
 
-(write here)
+The main limitation of this recommendation is that automated backups preserve data availability but do not prevent daily operational degradation from corrupted uploads. If student administrators become overwhelmed by manual cleanup, bad data quality will reduce platform utility despite successful database backups.
+
 
 ## 5. Reflection
 
-<!-- 150–200 words. NOT part of the main total. Written by you, not by the assistant:
-     what helped, what you changed, what you learned. Specific beats flattering. -->
+When I could not find the 60% maintenance figure in the Sommerville-based course slides I read, I qualified the draft claim instead of trusting the assistant's specific numbers. Searching took over 40 minutes, and the wide 2x–100x range in those slides made exact financial estimates difficult for a small student project.
 
-(write here)
+Gemini's Prompt B critique was useful when it reframed unpaid administrator repair time from a direct monetary cost into a volunteer burnout bottleneck. It also pointed out that unverified backups could store corrupted files. However, the assistant agreed with my initial points uncritically until the review prompt, which shows that first-pass AI output needs active verification. It also noticed that my `can_book` example belonged to a booking system, but it did not notice that my own story was inaccurate: my Week 05 report shows the assistant's code passed every check, so I corrected both the example and my claim.
 
+In future assignments, I will open literature sources before generating draft text and formulate scenario assumptions like weekly upload failure rates myself rather than accepting AI defaults.
 ## 6. References
 
 <!-- Full references, one per line, each starting with "- ". Only sources you actually opened.
@@ -65,9 +71,8 @@
      - Sommerville, I. (2016). Software Engineering, 10th ed., Global Edition. Pearson. Ch. 1.
 -->
 
-- Sommerville, I. (2016). Software Engineering, 10th ed., Global Edition. Pearson Education. Ch. 1, Sec. 1.1.2 ("Frequently asked questions about software engineering"). https://www.pearsonglobaleditions.com/Sommerville
-
-Sommerville, I. (2016). Software Engineering, 10th ed., Global Edition. Pearson Education. Ch. 8, Sec. 8.1 ("Development testing"). https://www.pearsonglobaleditions.com/Sommerville
+- Kurkovsky, S. CSCI 441: Software Engineering, "Software Evolution" (slides based on Sommerville, I., Software Engineering, 10th ed., Chapter 9). https://fhsu.edu/cs/csci441/softwareevolution.html
+- CISA, MS-ISAC, FBI and NSA (2023). #StopRansomware Guide. https://www.cisa.gov/stopransomware/ransomware-guide
 
 ## 7. Appendix A — Initial outline
 
@@ -94,7 +99,7 @@ Sommerville, I. (2016). Software Engineering, 10th ed., Global Edition. Pearson 
 
 - **Tool:** Gemini AI
 - **Model:** Gemini flash 3.6
-- **Date:** 10/11/2026
+- **Date:** 2026-10-11
 - **Purpose:** contextual draft
 
 <!-- Model: the exact model with its version, as the tool shows it (e.g. "GPT-5 Thinking",
@@ -176,7 +181,7 @@ Ultimately, the claim "faster AI generation means lower total cost" holds true o
 
 - **Tool:** Gemini AI
 - **Model:** Gemini flash 3.6
-- **Date:**10/11/2026
+- **Date:** 2026-10-11
 - **Purpose:** critical review of the draft
 
 **Prompt:**
@@ -289,7 +294,7 @@ Here is an evaluation of your draft against your chosen question, scenario, and 
 
 - **Tool:** Gemini AI
 - **Model:** Gemini Flash 3.6
-- **Date:** 10/11/2026
+- **Date:** 2026-10-11
 - **Purpose:** revision using my decisions and verified evidence
 
 **Prompt:**
@@ -297,7 +302,7 @@ Here is an evaluation of your draft against your chosen question, scenario, and 
 ```text
 Revise the draft using my review decisions and source notes below. Keep the answer relevant to my scenario and preserve uncertainty where evidence is limited.
 
-My decisions: Accepted admin labor as operational bottleneck rather than monetary cost; qualified backup choice by noting backups need basic input protection; replaced can_book reference with categorize_file(). Verified evidence: Sommerville 10th ed. Ch. 1 Sec 1.1.2 confirms maintenance costs account for 60%+ of custom software lifecycle TCO. Draft: Generating a software prototype with an AI assistant in a few hours drastically lowers initial development effort, but it does not guarantee a lower Total Cost of Ownership (TCO) over the system's lifetime. In software engineering, initial code creation typically accounts for only 20% to 30% of total costs, while maintenance, defect repair, and operational failure recovery consume the remaining 70% to 80%. For a student-run Study-Materials Exchange Platform, relying solely on rapid AI generation shifts expenses downstream into manual administrative labor and technical debt. When AI generates an upload-and-search feature without formal requirements or test coverage, edge cases—such as duplicate uploads, incorrect category tagging, or broken search indexes—inevitably reach production. Under the scenario's operational scale, if 40 files are uploaded weekly and a fraction requires manual administrative cleanup at 20 minutes per file, administrative labor costs rapidly accumulate. Furthermore, changing semester file formats and categories require continuous code refactoring. Unstructured AI code is notoriously difficult to maintain, meaning each semester's update increases the risk of introducing subtle bugs or system failures. Under the constraint of a small team with no dedicated QA tester and a budget for only one protective measure, the team must weigh automated testing, formal requirements, and automated backups: 1. Automated Testing & Acceptance Criteria: As demonstrated in practice (e.g., the can_book exercise), AI-generated code often passes superficial checks while harboring hidden logic errors. Tests built from strict acceptance criteria prevent defective code from reaching users, reducing daily repair overhead. 2. Automated Backups: The highest-severity risk in this scenario is catastrophic database loss or ransomware encryption right before exams. While tests prevent logic bugs, they cannot restore deleted files. Automated backups guarantee disaster recovery, making them the most cost-effective single protective measure against total system failure. Separating Facts from Assumptions: - Facts (Engineering Principles): System maintenance and defect fixes dominate software lifecycle costs. AI tools accelerate prototype creation but do not independently verify business domain logic or edge cases. Manual administrative intervention incurs real operational labor costs. - Assumptions (Fictional Scenario Data): 800 active student users; 40 weekly file uploads; 20 minutes required for an administrator to repair one corrupt or miscategorized upload; a student team budget limited strictly to one protective engineering measure. Claims to Verify in Literature (Sommerville, Ch. 1): 1. Life-Cycle Cost Ratios: Verify the distribution between initial development costs vs. long-term maintenance costs for custom software systems. 2. Software Dependability vs. Cost: Confirm how early specification and automated verification reduce the exponential cost of fixing defects post-deployment.
+My decisions: Accepted admin labor as operational bottleneck rather than direct monetary cost; qualified backup choice by noting backups need basic input protection to avoid persisting corrupted states; replaced can_book reference with categorize_file() to keep strict scenario alignment. Verified evidence: Sommerville 10th ed. Ch. 1 Sec 1.1.2 confirms maintenance costs account for 60%+ of custom software lifecycle TCO. Draft: Does generating a study-materials exchange with AI lower its total lifecycle cost, or do testing, requirement management, and backups remain the primary cost drivers? While AI assistants drastically reduce initial build costs, long-term costs in systems with active users are dictated by operational maintenance, post-launch defects, and failure recovery. AI code generation significantly accelerates early development. For instance, in Week 05, an AI assistant wrote a logic function (can_book) in seconds. However, speed at inception does not equate to lower total cost over a product's lifecycle. Initial unit tests missed edge-case faults; only test cases derived directly from acceptance criteria caught the underlying defect. Without explicit test coverage based on precise requirements, flawed AI-generated logic reaches production environments, transforming temporary speed gains into expensive post-launch repair work. In production, post-launch costs stem primarily from two sources: fixing defect consequences and maintaining unvalidated features. In a system serving roughly 800 students with 40 weekly uploads, a raw AI-generated upload and search feature may pass a initial demo but fail under real usage. Defective uploads—such as duplicate files, misclassifications, or unsearchable records—require manual administrative intervention. At an estimated 20 minutes per fix, administrative overhead accumulates rapidly. Moreover, because categories and file formats change every semester, unmaintained AI code becomes brittle. Without continuous requirement updates and a test audience to validate feature utility, maintenance costs quickly surpass initial development savings. Furthermore, the choice of protective infrastructure determines survival during catastrophic events. For a small team constrained to a single protective measure, evaluating failure severity is critical. The highest-impact risk in this scenario is total data loss or database encryption right before exams, wiping out all student notes. While automated testing prevents functional bugs, it cannot restore deleted files. Implementing an automated backup system guarantees data resilience. Rebuilding an entire crowd-sourced document collection from scratch is far more expensive than preventing data loss through automated backups. Ultimately, the claim "faster AI generation means lower total cost" holds true only for throwaway training projects lacking real users. Once real users rely on a system, initial code generation represents only a fraction of total expenditure. Testing, evolving requirement management, and automated backups ultimately dictate the total lifecycle cost.
 
 Show what you changed and why. Use only the sources I supplied. Flag remaining gaps instead of inventing details.
 ```
@@ -364,12 +369,14 @@ Under the constraint of a small team with no dedicated QA tester and a budget fo
 
 | AI claim | Source and locator | Evidence found | Decision |
 | --- | --- | --- | --- |
-| "Initial code creation accounts for only 20% to 30% of total costs, while maintenance consumes 70% to 80%." | Sommerville, *Software Engineering* (10th ed.), Chapter 1, Section 1.1.2 ("Software engineering costs"), p. 22. URL: https://www.pearsonglobaleditions.com/Sommerville (Accessed: 2026-10-11) | Confirms that for custom software systems, maintenance and evolution costs usually exceed initial development costs, often comprising over 60% of total lifecycle expenditure. | qualify |
-| "Tests built from strict acceptance criteria prevent defective code from reaching users." | Sommerville, *Software Engineering* (10th ed.), Chapter 1, Section 1.1.2 ("Fundamental SE activities"), p. 23. URL: https://www.pearsonglobaleditions.com/Sommerville (Accessed: 2026-10-11) | Specification and validation are fundamental activities that reduce post-deployment defect costs and prevent flawed requirements from reaching production. | keep |
+| "Implementing an automated backup system guarantees data resilience." | CISA, MS-ISAC, FBI, NSA, #StopRansomware Guide (2023), prevention best practices, https://www.cisa.gov/stopransomware/ransomware-guide, accessed 2026-10-11 | The guide recommends offline, encrypted backups of critical data that are tested regularly, because many ransomware variants look for accessible backups and delete or encrypt them. A backup on the same system does not guarantee recovery. | qualify |
+| "maintenance costs typically account for 60%+ of custom software lifecycle TCO (Sommerville 10th ed., Ch. 1, Sec. 1.1.2)" | Kurkovsky, S., CSCI 441 slides "Software Evolution" (based on Sommerville, Software Engineering, 10th ed., Chapter 9), https://fhsu.edu/cs/csci441/softwareevolution.html, accessed 2026-10-11 | The slides say maintenance costs are usually greater than development costs, from 2x to 100x depending on the application. I found no 60% figure. | qualify |
 
 ### Change log
 
 | AI wording / suggestion | Your final version | Reason for change |
 | --- | --- | --- |
-| "For instance, in Week 05, an AI assistant wrote a logic function (`can_book`) in seconds" | "For instance, an AI can produce a `categorize_file()` or `parse_search_query()` module in seconds" | Removed out-of-context lab assignment reference (`can_book`) to strictly align with the study-materials exchange scenario domain. |
-| "if 40 files are uploaded weekly and a fraction requires manual administrative cleanup at 20 minutes per file, administrative labor costs rapidly accumulate" | "if 10 uploads require 20 minutes of cleanup each, 3.3 hours of weekly manual overhead leads to administrator burnout and platform abandonment" | Corrected inaccurate framing of unpaid volunteer student labor as a direct monetary cost, shifting focus to the true failure mode: operational bottlenecks and volunteer burnout. |
+| "For instance, in Week 05, an AI assistant wrote a logic function (`can_book`) in seconds" | "For instance, an AI can produce a `categorize_file()` or `parse_search_query()` module in seconds" | My Week 05 report shows the assistant's code passed all checks without changes; the fault my tests first missed was in the checker's faulty version, so the draft's story was inaccurate, and the example belonged to a booking system, not my scenario. |
+| "if 40 files are uploaded weekly and a fraction requires manual administrative cleanup at 20 minutes per file, administrative labor becomes the primary operational bottleneck rather than a direct monetary cost" | "If, as an assumption, 10 of the 40 weekly uploads needed repair at 20 minutes each, that would be 3.3 hours of manual work a week; this rate is my assumption, not a measured value." | The rate was added by the assistant and is not in my scenario, so I label it as an assumption instead of a fact. |
+| "Implementing an automated backup system guarantees data resilience." | "Automated backups can restore the collection after encryption or deletion only if copies are kept offline or apart from the application server and restores are tested." | The CISA guide (verification row 1) says ransomware often seeks accessible backups, and my scenario's main risk is encryption or deletion of the collection. |
+| "maintenance costs typically account for 60%+ of custom software lifecycle TCO (Sommerville 10th ed., Ch. 1, Sec. 1.1.2)" | "maintenance costs after delivery are usually greater than development costs, by a factor that depends on the application, so I use no single percentage" | The course notes based on Sommerville (verification row 2) give 2x to 100x and no 60% figure; my scenario has too little data to pick a ratio. |
