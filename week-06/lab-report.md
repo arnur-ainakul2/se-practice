@@ -93,15 +93,15 @@ no way to set up the case). Save each final run as `evidence/final-T<n>.png`.
 
 | # | Case | What you set up and request | Expected | AC | Result on v1 | Result on final | Final screenshot |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | Touching | 11:00–12:00 | Available | AC4 | Available  | Available / Unavailable / Not testable | final-T1.png |
-| T2 | Overlap | 10:30–11:30 | Unavailable | AC4 | Unavailable  | Available / Unavailable / Not testable | final-T2.png |
-| T3 | Blocked | 11:00–12:00, room blocked | Unavailable | AC3 | Unavailable  | Available / Unavailable / Not testable | final-T3.png |
-| T4 | Exactly 2 hours | 12:00–14:00 | Available | AC2 | Available  | Available / Unavailable / Not testable | final-T4.png |
-| T5 | Over 2 hours | 12:00–14:01 | Unavailable | AC2 |  Unavailable  | Available / Unavailable / Not testable | final-T5.png |
-| T6 | Starts now | 09:00–09:30 (current time 09:00) | Unavailable | AC1 |  Unavailable | Available / Unavailable / Not testable | final-T6.png |
-| T7 | Reversed times | 12:00–11:00, and the page says why | Unavailable | AC1, AC6 | Unavailable | Available / Unavailable / Not testable | final-T7.png |
-| T8 | Same check twice | T1, then T1 again without reloading | Available | AC5 | Available | Available / Unavailable / Not testable | final-T8.png |
-| T9 | Narrow screen | T1 at about 375 px wide | Available | AC6 | Available  | Available / Unavailable / Not testable | final-T9.png |
+| T1 | Touching | 11:00–12:00 | Available | AC4 | Available  | Available | final-T1.png |
+| T2 | Overlap | 10:30–11:30 | Unavailable | AC4 | Unavailable  | Unavailable | final-T2.png |
+| T3 | Blocked | 11:00–12:00, room blocked | Unavailable | AC3 | Unavailable  |   Unavailable | final-T3.png |
+| T4 | Exactly 2 hours | 12:00–14:00 | Available | AC2 | Available  | Available | final-T4.png |
+| T5 | Over 2 hours | 12:00–14:01 | Unavailable | AC2 |  Unavailable  | Unavailable | final-T5.png |
+| T6 | Starts now | 09:00–09:30 (current time 09:00) | Unavailable | AC1 |  Unavailable | Unavailable | final-T6.png |
+| T7 | Reversed times | 12:00–11:00, and the page says why | Unavailable | AC1, AC6 | Unavailable | Unavailable | final-T7.png |
+| T8 | Same check twice | T1, then T1 again without reloading | Available | AC5 | Available | Available | final-T8.png |
+| T9 | Narrow screen | T1 at about 375 px wide | Available | AC6 | Available  | Available | final-T9.png |
 
 ---
 
@@ -127,13 +127,39 @@ in) and Bolt's answer, unedited.
 **Functional fix prompt, as sent, and Bolt's answer:**
 
 ```text
-(paste here)
+In the current prototype, trying to enter a request that ends at 24:00 is not possible, but AC1 allows an end time up to 1440 minutes (24:00). Make the smallest change that lets the user enter 24:00 as the requested end time and have it validated and displayed correctly. Do not allow 24:00 as the start or current time. Preserve the other acceptance criteria. Explain which file/component you changed and why.
+
+Bolt's answer:
+626f6c742d63632d6167656e74The problem: HTML's `<input type="time">` only accepts 00:00–23:59, so 24:00 can't be typed. I'll let the end field use a plain text input and teach the parser to accept "24:00" → 1440, while keeping start/current as time inputs (so they can't be 24:00).I'll add a `type` prop to `TimeInput` so only the end field can accept free text (enabling "24:00"), while start/current stay as native time pickers that physically can't produce "24:00". The parser will accept "24:00" → 1440.Now `minutesToLabel` wraps modulo 1440, which would turn 1440 into "00:00" — that's fine for display of the end boundary in the banner/timeline (it shows "00:00" at the right edge). But the ResultBanner shows `minutesToLabel(result.end)` which for 1440 would show "00:00" — misleading. Let me check and fix the display so 1440 shows as "24:00".I'll fix `minutesToLabel` to render 1440 as "24:00" instead of wrapping.Build passes.
+
+## Summary
+
+You can now type **24:00** in the "Requested end" field, and it will be accepted as 1440 minutes, validated against all acceptance criteria, and displayed as "24:00" in the result banner.
+
+### What changed and why
+
+- **`src/components/TimeInput.tsx`** — added an optional `type` prop (defaults to `"time"`). The end field now uses `type="text"` with a numeric input mode and an `HH:MM` pattern that includes 24:00, because the native `<input type="time">` picker physically cannot emit "24:00" (it caps at 23:59). Start and current time keep the native time picker, so they can never produce 24:00.
+- **`src/utils/time.ts`** — `labelToMinutes` now accepts the literal "24:00" and returns `1440`; any other hour stays capped at 23. `minutesToLabel` now renders `1440` as "24:00" instead of wrapping it to "00:00", so the result banner and timeline show the end-of-day boundary correctly.
+- **`src/App.tsx`** — the "Requested end" field passes `type="text"` and an updated hint, while the start and current-time fields are unchanged and therefore still cannot be 24:00.
+
+AC1–AC6 are preserved: the 120-minute cap (AC2), blocked-room check (AC3), overlap check with touching endpoints allowed (AC4), read-only Available/Unavailable decision (AC5), and responsive layout with validation feedback (AC6) all still apply to the new 24:00 end value.
 ```
 
 **Cleanup prompt, as sent, and Bolt's answer:**
 
 ```text
-(paste here)
+Review only the request form and result feedback for confusing UI feedback when a user changes the selected room or requested times after running a check. Suggest one small cleanup. Do not add features or redesign the whole application. Implement it only if it preserves AC1–AC6.
+
+Bolt's answer:
+626f6c742d63632d6167656e74The confusing bit: after you run a check, the **Available / Unavailable** banner and the timeline's proposed-interval color stay frozen on the old verdict even after you change the room or times. A stale decision next to freshly edited inputs reads as contradictory feedback.
+
+Small cleanup: clear the stale result whenever any form input changes, so the banner returns to its neutral "pick a room and time" state until the user runs the check again. This touches only display timing — it doesn't alter AC1–AC6 validation logic.I'll wrap the setters so any form change clears the stale result, and do the same for room selection.Build passes.
+
+## Summary
+
+The confusing feedback: after running a check, the **Available / Unavailable** banner and the timeline's proposed-interval color stayed frozen on the old verdict even after you changed the room or times — so a stale decision sat next to freshly edited inputs.
+
+The cleanup: any change to the room, current time, start, or end now clears the previous verdict, returning the banner to its neutral "pick a room and time" state until you run the check again. I made the change only in `src/App.tsx` by routing the existing setters through small wrappers that clear the result; no validation logic, acceptance criteria, or visual layout was touched. AC1–AC6 are fully preserved.
 ```
 
 Add further blocks for further prompts.
@@ -143,8 +169,8 @@ the AC (or the scope) that justifies it.
 
 | # | What Bolt changed or suggested | accept / reject | Reason — cite the AC or the scope | Retest: which cases, result |
 | --- | --- | --- | --- | --- |
-| 1 | | accept / reject | | |
-| 2 | | accept / reject | | |
+| 1 | Updated the requested end-time field to accept 24:00; updated the time parser to convert it to 1440 minutes and the formatter to display it as 24:00. Start and current-time fields remain native time inputs.| accept  |AC1 allows an end time up to 1440 minutes. Keeping the change limited to the requested end field preserves the intended input for start and current time.|Tested an interval ending at 24:00 and reran T1–T9. All tests passed; everything works as expected |
+| 2 | Clear the previous availability result whenever the room, current time, requested start, or requested end changes.| accept  |AC5 requires a clear availability decision, and AC6 requires understandable feedback. Clearing an outdated result prevents it from appearing to describe the edited request.|Changed the room and time inputs after running a check, then reran T1–T9. The stale result cleared as expected; all tests passed. |
 
 ---
 
@@ -154,8 +180,8 @@ Two to four concrete changes, each one retested.
 
 | # | Issue | Decision | Change (file or component) | Result after retest |
 | --- | --- | --- | --- | --- |
-| 1 | | | | |
-| 2 | | | | |
+| 1 |The requested end time could not be set to 24:00.|Fix|Updated TimeInput.tsx, time.ts, and App.tsx to allow 24:00 for the requested end time, convert it to 1440 minutes, and display it correctly.|Tested an interval ending at 24:00 and reran T1–T9. All worked as expected.|
+| 2 |The previous availability result remained visible after changing the request.|Fix|Updated App.tsx to clear the result whenever the room or a time input changes.|Tested changing the room and times after a check, then reran T1–T9. All worked as expected.|
 
 ---
 
@@ -168,7 +194,7 @@ the assistant, what it does and how it decides. 60 words or more.
 **File:** `(write here, e.g. src/App.tsx)`
 
 <!-- Write your explanation below this line -->
-
+The checkAvailability function receives the selected room, the requested start and end times, the current time, and the existing bookings. It checks whether the interval is valid and starts after the current time. It also rejects requests longer than 120 minutes and requests for blocked rooms. Then it checks whether the requested interval overlaps a booking in the selected room. If any check fails, it adds a reason and returns “unavailable”; otherwise, it returns “available.” The function only checks the data and does not modify bookings.
 ---
 
 ## 9. What still fails, and what the criteria do not say
