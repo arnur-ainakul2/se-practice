@@ -1,0 +1,57 @@
+@startuml
+autonumber
+
+actor Student
+participant CatalogController
+participant CatalogService
+participant RegistrationService
+participant "offering : CourseOffering" as Offering
+participant "enrollment : Enrollment" as Enrollment
+
+== Catalog browsing (US-01 / R1) ==
+
+Student -> CatalogController : browseCatalog(semester)
+CatalogController -> CatalogService : getOfferingsForSemester(semester)
+CatalogService -> Offering : findBySemester(semester)
+Offering --> CatalogService : offerings with code, title, offeringId, availablePlaces
+CatalogService --> CatalogController : catalog results
+CatalogController --> Student : display course catalog and available places
+note over CatalogService, Offering
+  Catalog results are a snapshot; viewing them does not reserve a place.
+end note
+
+== Registration request (US-02, US-03 / R2-R5) ==
+
+Student -> CatalogController : registerForOffering(studentId, offeringId)
+CatalogController -> RegistrationService : registerStudent(studentId, offeringId)
+
+group Atomic registration operation
+    note over RegistrationService, Offering
+      Final duplicate and capacity checks and Enrollment creation
+      happen atomically, so competing requests cannot exceed capacity.
+    end note
+
+    RegistrationService -> Offering : checkDuplicate(studentId, offeringId)
+    Offering --> RegistrationService : alreadyEnrolled
+
+    RegistrationService -> Offering : checkCurrentAvailability(offeringId)
+    Offering --> RegistrationService : currentAvailablePlaces
+
+    alt already enrolled
+        RegistrationService --> CatalogController : rejection reason: already enrolled
+        CatalogController --> Student : explain already enrolled; enrollment count unchanged
+
+    else course full
+        RegistrationService --> CatalogController : rejection reason: course full
+        CatalogController --> Student : explain course full; enrollment count unchanged
+
+    else not enrolled and places left
+        RegistrationService -> Enrollment : createEnrollment(studentId, offeringId)
+        RegistrationService -> Offering : calculateAvailablePlaces()
+        Offering --> RegistrationService : updated available places
+        RegistrationService --> CatalogController : registration confirmation
+        CatalogController --> Student : confirm registration and show available places
+    end
+end
+
+@enduml
