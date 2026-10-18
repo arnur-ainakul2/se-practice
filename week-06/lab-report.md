@@ -55,11 +55,25 @@ prompt: yes / no
 **Bolt's list of the files/components it created, pasted unedited:**
 
 ```text
-(paste here)
+- `src/types.ts` — shared TypeScript types
+- `src/data/sampleData.ts` — fictional rooms and bookings
+- `src/utils/time.ts` — HH:MM ↔ minutes helpers
+- `src/utils/availability.ts` — pure availability check logic (AC1–AC4)
+- `src/components/RoomSelector.tsx` — room picker cards
+- `src/components/TimeInput.tsx` — labeled time field with validation
+- `src/components/Timeline.tsx` — 24h schedule visualization
+- `src/components/ResultBanner.tsx` — Available/Unavailable decision display
+- `src/App.tsx` — page composition and state
 ```
 
 **What v1 does — one line per thing that works, or visibly does not:**
+Displays a responsive UI with a room selector, time inputs, and a visual 24-hour timeline.
 
+Includes functional "Check availability" logic that shows an Available/Unavailable banner.
+
+Prevents actual modification of the existing sample booking data (read-only checks).
+
+Has sample data pre-loaded, including a blocked room with a maintenance reason.
 -
 
 **Repair prompt** (only if the first build did not run — the deck allows one, then the result is
