@@ -1,0 +1,104 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceGroupBodyBackgroundColor transparent
+
+actor "Student : S101" as Student
+participant ":CatalogController" as Controller
+participant ":CatalogService" as CatalogSvc
+participant ":RegistrationService" as RegSvc
+participant "offering : CourseOffering" as Offering
+participant "student : Student" as StudentEntity
+participant "enrollment : Enrollment" as Enrollment
+
+== Catalog Browsing (US-01 / R1) ==
+
+Student -> Controller : browseCatalog(semester = "Fall 2026")
+activate Controller
+
+Controller -> CatalogSvc : getOfferingsForSemester("Fall 2026")
+activate CatalogSvc
+
+CatalogSvc -> Offering : findBySemester("Fall 2026")
+activate Offering
+Offering --> CatalogSvc : List<CourseOffering>
+deactivate Offering
+
+CatalogSvc --> Controller : List<OfferingDTO> (code, title, offeringId, availablePlaces)
+deactivate CatalogSvc
+
+Controller --> Student : Display Catalog (e.g., CS101-A with 2 available places)
+deactivate Controller
+
+== Path 1: Guarded Success Registration (US-02 / R2, R4) ==
+
+[-> Controller : registerForOffering(studentId = "S103", offeringId = "MATH201-B")
+activate Controller
+
+Controller -> RegSvc : registerStudent("S103", "MATH201-B")
+activate RegSvc
+
+group Atomic Registration Transaction [US-02 / AC-04]
+    RegSvc -> Offering : checkAvailabilityAndDuplicate("S103")
+    activate Offering
+    Offering --> RegSvc : availablePlaces = 5, isEnrolled = false
+    deactivate Offering
+
+    create Enrollment
+    RegSvc -> Enrollment : new("S103", "MATH201-B")
+    
+    RegSvc -> Offering : decrementAvailablePlaces()
+    activate Offering
+    Offering --> RegSvc : updatedAvailablePlaces = 4
+    deactivate Offering
+end
+
+RegSvc --> Controller : Registration Success Confirmation
+deactivate RegSvc
+
+Controller -->[ : Display Confirmation (Enrolled in MATH201-B, 4 places remain)
+deactivate Controller
+
+== Path 2: Duplicate Registration Rejection (US-03 / R3, R5) ==
+
+[-> Controller : registerForOffering(studentId = "S106", offeringId = "PHYS101-A")
+activate Controller
+
+Controller -> RegSvc : registerStudent("S106", "PHYS101-A")
+activate RegSvc
+
+group Atomic Registration Transaction
+    RegSvc -> Offering : checkAvailabilityAndDuplicate("S106")
+    activate Offering
+    Offering --> RegSvc : availablePlaces = 3, isEnrolled = true
+    deactivate Offering
+
+    RegSvc --> Controller : Registration Failure ("already enrolled")
+end
+deactivate RegSvc
+
+Controller -->[ : Display Rejection ("already enrolled", 0 enrollments created)
+deactivate Controller
+
+== Path 3: Course Full Rejection (US-03 / R2, R5) ==
+
+[-> Controller : registerForOffering(studentId = "S105", offeringId = "ENG102-C")
+activate Controller
+
+Controller -> RegSvc : registerStudent("S105", "ENG102-C")
+activate RegSvc
+
+group Atomic Registration Transaction
+    RegSvc -> Offering : checkAvailabilityAndDuplicate("S105")
+    activate Offering
+    Offering --> RegSvc : availablePlaces = 0, isEnrolled = false
+    deactivate Offering
+
+    RegSvc --> Controller : Registration Failure ("course full")
+end
+deactivate RegSvc
+
+Controller -->[ : Display Rejection ("course full", 0 enrollments created)
+deactivate Controller
+
+@enduml

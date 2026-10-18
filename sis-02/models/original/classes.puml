@@ -1,0 +1,50 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class Student {
+  - studentId : String {id}
+  - name : String
+}
+
+class Course {
+  - courseCode : String {id}
+  - title : String
+  - description : String
+}
+
+class CourseOffering {
+  - offeringId : String {id}
+  - semester : String
+  - capacity : Integer
+  - availablePlaces : Integer
+  + calculateAvailablePlaces() : Integer
+}
+
+class Enrollment {
+  - enrollmentId : String {id}
+  - registrationDate : DateTime
+}
+
+' Relationships & Multiplicities
+Student "1" -- "0..*" Enrollment : makes >
+CourseOffering "1" -- "0..*" Enrollment : has >
+Course "1" -- "0..*" CourseOffering : defines >
+
+' Association Class Alternative View / Explicit Linking
+(Student, CourseOffering) .. Enrollment
+
+note right of CourseOffering
+  <b>Capacity Constraint:</b>
+  0 <= capacity
+  0 <= availablePlaces <= capacity
+  availablePlaces = capacity - count(Enrollment)
+end note
+
+note right of Enrollment
+  <b>Uniqueness Constraint:</b>
+  Unique(studentId, offeringId)
+  A student can have at most 
+  1 enrollment per CourseOffering.
+end note
+
+@enduml
