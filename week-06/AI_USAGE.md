@@ -6,22 +6,23 @@ including anything an AI tool produced.
 
 | Tool | Exact model / plan | Used for | Which files it touched |
 | --- | --- | --- | --- |
-| Bolt.new | | prototype v1 (Task 2) | |
-| Bolt.new | | cleanup prompts (Task 4) | |
+| Bolt.new |GLM 5.3 Flash| prototype v1 (Task 2) |src/types.ts, src/data/sampleData.ts, src/utils/time.ts, src/utils/availability.ts, src/components/RoomSelector.tsx, src/components/TimeInput.tsx, src/components/Timeline.tsx, src/components/ResultBanner.tsx, src/App.tsx|
+| Bolt.new |GLM 5.3 Flash| cleanup prompts (Task 4) |Functional fix: src/components/TimeInput.tsx, src/utils/time.ts, src/App.tsx. Usability cleanup: src/App.tsx.
+|
 | | | | |
 
-**I used another assistant as well (to explain code, to draft text in lab-report.md, …):** yes / no
-<!-- If "yes": which one, the exact model, and for which section. -->
+**I used another assistant as well (to explain code, to draft text in lab-report.md, …):** yes
+I used another assistant as well (to explain code, to draft text in lab-report.md, …): yes, I used Google Gemini to clarify the testing steps, structure the markdown tables for Task 3 and Task 4, and understand how to properly write cleanup prompts.
 
-**`original/` holds Bolt's first version exactly as downloaded, and `evidence/v1.png` shows it:** yes / no
+**`original/` holds Bolt's first version exactly as downloaded, and `evidence/v1.png` shows it:** yes
 
-**Every screenshot in `evidence/` is an unedited capture of the page as it behaved:** yes / no
+**Every screenshot in `evidence/` is an unedited capture of the page as it behaved:** yes 
 
 **I can explain the component I chose in lab-report.md section 8 — and how the page decides
-availability — without the assistant:** yes / no
+availability — without the assistant:** yes 
 
 **Anything I accepted from the AI without fully understanding it:**
-<!-- Name the file and the part. An honest entry here costs far less than a blank one that turns out to be untrue. -->
+nope
 
-Signed: <your name>
-Date:
+Signed: Ainakul Arnur
+Date:10/18/2026

@@ -127,7 +127,7 @@ in) and Bolt's answer, unedited.
 **Functional fix prompt, as sent, and Bolt's answer:**
 
 ```text
-In the current prototype, trying to enter a request that ends at 24:00 is not possible, but AC1 allows an end time up to 1440 minutes (24:00). Make the smallest change that lets the user enter 24:00 as the requested end time and have it validated and displayed correctly. Do not allow 24:00 as the start or current time. Preserve the other acceptance criteria. Explain which file/component you changed and why.
+In the current prototype, trying to enter a request that ends at 24:00 produces no valid input, but AC1 requires an end time up to 1440 minutes (24:00). Make the smallest change that fixes this behavior. Preserve the other acceptance criteria. Explain which file/component you changed and why.
 
 Bolt's answer:
 626f6c742d63632d6167656e74The problem: HTML's `<input type="time">` only accepts 00:00–23:59, so 24:00 can't be typed. I'll let the end field use a plain text input and teach the parser to accept "24:00" → 1440, while keeping start/current as time inputs (so they can't be 24:00).I'll add a `type` prop to `TimeInput` so only the end field can accept free text (enabling "24:00"), while start/current stay as native time pickers that physically can't produce "24:00". The parser will accept "24:00" → 1440.Now `minutesToLabel` wraps modulo 1440, which would turn 1440 into "00:00" — that's fine for display of the end boundary in the banner/timeline (it shows "00:00" at the right edge). But the ResultBanner shows `minutesToLabel(result.end)` which for 1440 would show "00:00" — misleading. Let me check and fix the display so 1440 shows as "24:00".I'll fix `minutesToLabel` to render 1440 as "24:00" instead of wrapping.Build passes.
@@ -191,7 +191,7 @@ Pick one file or component Bolt generated that matters for AC1–AC5 — the one
 availability is the best choice. Name its path in backticks, then explain in your own words, without
 the assistant, what it does and how it decides. 60 words or more.
 
-**File:** `(write here, e.g. src/App.tsx)`
+**File:** `src/utils/availability.ts`
 
 <!-- Write your explanation below this line -->
 The checkAvailability function receives the selected room, the requested start and end times, the current time, and the existing bookings. It checks whether the interval is valid and starts after the current time. It also rejects requests longer than 120 minutes and requests for blocked rooms. Then it checks whether the requested interval overlaps a booking in the selected room. If any check fails, it adds a reason and returns “unavailable”; otherwise, it returns “available.” The function only checks the data and does not modify bookings.
@@ -205,22 +205,21 @@ The same IDs as `known_fails` in `submission.yml`. Write `none` if the run is cl
 
 | Check | Why it stays |
 | --- | --- |
-| | |
-
+| P3 | The checker finds `@supabase/supabase-js` in `prototype/package.json` and flags it as a backend/database dependency. I am keeping this FAIL because the dependency is present in the final prototype's package manifest, even though the app does not use it. |
 ### 9.2 The end of the day
 
 AC1 allows `end ≤ 1440` — a booking may end at 24:00. Can a user of your final page ask for
 23:00–24:00? How — and if not, why is that acceptable or not? (This is the value you declare in
 `submission.yml` under `assumptions.end_of_day`.)
 
--
+-Yes. The final page allows the user to enter 24:00 as the requested end time. The time parser converts it to 1440 minutes, and the result displays it as 24:00. The start time and current time remain regular time inputs. In submission.yml, I would declare typed-24:00.
 
 ### 9.3 Which "now"?
 
 AC1 says "after the supplied current time". What did **v1** use as the current time, and what did
 that mean for testing case T6?
 
--
+-In v1, the current time was initialized from the computer's local clock. The page also had an editable current-time field, so I could set it to 09:00 for T6. With the current time set to 09:00, a request starting at 09:00 should be unavailable because AC1 requires the start time to be after the current time.
 
 ---
 
@@ -237,3 +236,4 @@ that mean for testing case T6?
      booking data." -->
 
 <!-- Write your conclusion below this line -->
+My first prediction was that the mobile layout might fail, but v1 remained usable at a narrow screen width. My second prediction was that touching endpoints might be rejected; that was also incorrect because T1 passed. The actual cleanup issues I addressed were that the end-time field could not accept 24:00, and an old result remained visible after changing the inputs. I would reject a suggestion to add a “Book” button or save bookings. The task is a read-only availability checker, and AC5 requires checking availability without changing existing booking data. A prototype can look finished while still failing an acceptance criterion. For example, a polished time field is not enough if it cannot represent the valid 24:00 end boundary allowed by AC1. After the cleanup, I tested entering 24:00 and checked the nine cases again; the results were as expected.
