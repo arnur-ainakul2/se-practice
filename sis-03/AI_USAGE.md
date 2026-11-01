@@ -6,25 +6,25 @@ including anything an AI tool produced.
 
 | Tool | Exact model / plan | Used for | Which files it touched | Reused from |
 | --- | --- | --- | --- | --- |
-| | | the plan (stage A) | | this SIS / week-05 |
-| | | Python v1 (stage B) | `code/original/booking_v1.py` | this SIS / week-05 |
-| Bolt.new | | web prototype v1 (stage B) | `web/original/` | this SIS / week-06 |
-| | | critique (stage C) | | this SIS |
-| | | repair (stage D) | | this SIS |
+| Gemini | Gemini Flash 3.6 | the plan (stage A) | `report.md` §11 (exchange record) | week-05 |
+| Gemini | Gemini Flash 3.6 | Python v1 (stage B) | `code/original/booking_v1.py`, `report.md` §11 | week-05 |
+| Bolt.new | GLM 5.3 Flash | web prototype v1 (stage B) | `web/original/`, `report.md` §§4, 11 | week-06 |
+| Codex (desktop) | not displayed | critique (stage C), report drafting and review | `report.md` §§2, 5–11, 13; `AI_USAGE.md` | this SIS |
+| Bolt.new | GLM 5.3 Flash | repairs (stage D) | `web/final/src/App.tsx`, `src/components/TimeInput.tsx`, `src/utils/time.ts`; `report.md` §§7, 11 | week-06 |
+| Codex (desktop) | not displayed | copied the existing final function and test suite into SIS-03; copied the Week 06 final export | `code/booking.py`, `code/test_booking.py`, `web/final/` | week-05 / week-06 |
 
-**The assistant wrote, or helped write, my tests in `code/`:** yes / no
-<!-- Either answer is allowed. If "yes": say which tests, and how you checked that their EXPECTED
-     values come from AC1–AC5 and not from what the generated code happens to return. -->
+**The assistant wrote, or helped write, my tests in `code/`:** yes
 
-**`code/original/` and `web/original/` hold the AI's first versions exactly as returned:** yes / no
+Gemini suggested edge-case categories in Week 05; I designed the test cases and reused that suite here. Expected values were checked against AC1–AC5, including the half-open interval rule and unchanged-input requirement, rather than copied from the function output.
 
-**Every result in report.md section 5 was actually run or seen, not assumed:** yes / no
+**`code/original/` and `web/original/` hold the AI's first versions exactly as returned:** yes
 
-**Everything I submitted, I can explain and defend in class — including the overlap condition
-and what the agent did in section 9:** yes / no
+**Every result in report.md section 5 was actually run or seen, not assumed:** yes
+
+**Everything I submitted, I can explain and defend in class — including the overlap condition and what the agent did in section 9:** yes
 
 **Anything I accepted from the AI without fully understanding it:**
-<!-- Name the file and the line. An honest entry here costs far less than a blank one that turns out to be untrue. -->
+Nope
 
-Signed: <your name>
-Date:
+Signed: Ainakul Arnur
+Date: 2026-11-01
