@@ -1,0 +1,58 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam BoxPadding 10
+
+actor "Student" as student
+
+' why: BookingService orchestrates business logic and enforces domain rules R1-R3.
+participant "BookingService" as service
+
+' why: BookingRepository manages persistence and checks existing booking overlaps / room block state.
+participant "BookingRepository" as repo
+
+title Sequence Diagram: Book Study Room (US-01 / R1–R4)
+
+student -> service : createBooking(studentId, roomId, startTime, endTime)
+activate service
+
+note over service
+  Validation R1:
+  1. startTime in future
+  2. 0 < duration <= 2 hours
+end note
+
+alt Invalid Time Slot
+    service --> student : error("Invalid booking time or duration (R1)")
+else Valid Time Slot
+    
+    service -> repo : isRoomBlocked(roomId)
+    activate repo
+    repo --> service : isBlocked
+    deactivate repo
+
+    alt Room is Blocked
+        service --> student : error("Room is currently blocked (R3)")
+    else Room is Not Blocked
+        
+        service -> repo : hasOverlappingBooking(roomId, startTime, endTime)
+        activate repo
+        repo --> service : isOverlapping
+        deactivate repo
+
+        alt Room Has Overlapping Booking
+            service --> student : error("Room unavailable due to overlap (R2)")
+        else Room is Available
+            
+            service -> repo : saveBooking(studentId, roomId, startTime, endTime)
+            activate repo
+            repo --> service : bookingRecord
+            deactivate repo
+
+            service --> student : confirmationNotice(bookingId, status="CONFIRMED") (R4)
+        end
+    end
+end
+
+deactivate service
+@enduml

@@ -1,0 +1,59 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class Student {
+  - studentId: String
+  - name: String
+  - email: String
+}
+
+class Administrator {
+  - adminId: String
+  - name: String
+}
+
+class Room {
+  - roomId: String
+  - roomName: String
+  - isBlocked: Boolean
+  --
+  + isAvailable(startTime: DateTime, durationMinutes: Integer): Boolean
+  + block(): void
+  + unblock(): void
+}
+
+class Booking {
+  - bookingId: String
+  - startTime: DateTime
+  - durationMinutes: Integer
+  - status: BookingStatus
+  --
+  + isValidDuration(): Boolean
+  + isFutureStart(): Boolean
+  + overlapsWith(otherStart: DateTime, otherDuration: Integer): Boolean
+  + cancel(): void
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+note bottom of Booking
+  <b>Rule R2 (No Overlap):</b>
+  Active bookings for the same room cannot overlap in time.
+  Evaluated as half-open intervals [start, start + duration).
+end note
+
+' Relationships with Multiplicities and explicit why comments
+
+' why: A student can create multiple bookings over time; each booking is owned by exactly one student.
+Student "1" -- "0..*" Booking : creates >
+
+' why: A room can have multiple bookings over time; each booking reservation belongs to exactly one room.
+Room "1" -- "0..*" Booking : reserved for >
+
+' why: Booking status tracks the current lifecycle state of a reservation.
+Booking *-- BookingStatus
+
+@enduml
