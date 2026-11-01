@@ -26,85 +26,53 @@
 
 <!-- Written by you, without AI, before the first exchange of this SIS. Commit and push it
      first (README §2). Reusing Week 05/06 work does not exempt you: this section is new. -->
-     **Scope:** This project is a responsive frontend for checking availability for one room. It uses fictional booking data and does not create bookings or use a backend, database, or login system.
 
-**AC1–AC6 Rephrased:**
+### 2.1 Scope in my own words
 
-- **AC1:** `start` and `end` are integer minutes after midnight. They must satisfy `0 ≤ start < end ≤ 1440`, and `start` must be strictly later than `now`.
-- **AC2:** A requested booking can last up to 120 minutes, including exactly 120 minutes.
-- **AC3:** If the selected room is blocked, every request must be rejected.
-- **AC4:** A request must be rejected if it overlaps an existing booking. Slots that meet exactly at an endpoint do not overlap.
-- **AC5:** The page must show a clear Available or Unavailable result. Checking availability must not change the existing bookings.
-- **AC6:** The page must show understandable validation messages and remain usable on a narrow mobile screen.
+**Scope:** This project is a responsive frontend for checking availability for one room. It uses fictional booking data and does not create bookings or use a backend, database, or login system.
 
-**Likely failure points:**
+### 2.2 The acceptance criteria in my own words
 
-1. Treating bookings that meet at an endpoint as overlapping.
-2. Accepting a start time that is equal to `now`, even though it must be strictly later.
+| AC | In my own words |
+| --- | --- |
+| AC1 | `start` and `end` are integer minutes after midnight. They must satisfy `0 ≤ start < end ≤ 1440`, and `start` must be strictly later than `now`. |
+| AC2 | A requested booking can last up to 120 minutes, including exactly 120 minutes. |
+| AC3 | If the selected room is blocked, every request must be rejected. |
+| AC4 | A request must be rejected if it overlaps an existing booking. Slots that meet exactly at an endpoint do not overlap. |
+| AC5 | The page must show a clear Available or Unavailable result. Checking availability must not change the existing bookings. |
+| AC6 | The page must show understandable validation messages and remain usable on a narrow mobile screen. |
+### 2.3 Likely failure points
 
-**The Contract:**  
+| # | Failure point | AC | How I will check it |
+| --- | --- | --- | --- |
+| 1 | Treating bookings that meet at an endpoint as overlapping. | AC4 | Run T1 with a request starting exactly when the existing booking ends; it should be Available. |
+| 2 | Accepting a start time that is equal to `now`, even though it must be strictly later. | AC1 | Run T6 with `start = now`; it should be Unavailable. |
+
+### 2.4 The contract
+
 `can_book(start, end, now, blocked, existing)`
 
-- `start`: Integer start time in minutes after midnight.
-- `end`: Integer end time in minutes after midnight.
-- `now`: Integer current time in minutes after midnight.
-- `blocked`: Boolean indicating whether the room is blocked.
-- `existing`: Collection of `(start, end)` integer pairs for existing bookings.
-- The function returns `True` only if AC1–AC4 are satisfied; otherwise it returns `False`. It must not modify `existing`.
+| Parameter | Meaning | Type and allowed values |
+| --- | --- | --- |
+| `start` | Requested start time in minutes after midnight. | Integer; must satisfy `0 ≤ start`. |
+| `end` | Requested end time in minutes after midnight. | Integer; must satisfy `start < end ≤ 1440`. |
+| `now` | Current time in minutes after midnight. | Integer from 0 to 1439; `start` must be strictly greater than `now`. |
+| `blocked` | Whether the selected room is blocked. | Boolean. If true, the function returns `False`. |
+| `existing` | Existing bookings for the selected room. | Collection of `(start, end)` integer pairs; the function must not modify it. |
+| returns | Whether the request satisfies AC1–AC4. | Boolean: `True` only when all four criteria hold; otherwise `False`. |
+
+### 2.5 Initial assumptions and manual checks
 
 **Assumptions:**
 
 1. `now` is always an integer from 0 to 1439.
 2. `existing` contains valid time pairs that do not overlap one another.
 
-**Manual verification:**  
-I will resize the browser to a narrow mobile width and check that the page remains usable. I will also review the validation messages to make sure they clearly explain why a request is unavailable. 
-
-### 2.1 Scope in my own words
-
-**Scope:** (write here)
-
-### 2.2 The acceptance criteria in my own words
-
-| AC | In my own words |
-| --- | --- |
-| AC1 | (write here) |
-| AC2 | (write here) |
-| AC3 | (write here) |
-| AC4 | (write here) |
-| AC5 | (write here) |
-| AC6 | (write here) |
-
-### 2.3 Likely failure points
-
-<!-- At least two. The brief's examples: endpoint overlap, starts-now. -->
-
-| # | Failure point | AC | How I will check it |
-| --- | --- | --- | --- |
-| 1 | (write here) | (write here) | (write here) |
-| 2 | (write here) | (write here) | (write here) |
-
-### 2.4 The contract
-
-| Parameter | Meaning | Type and allowed values |
-| --- | --- | --- |
-| `start` | (write here) | (write here) |
-| `end` | (write here) | (write here) |
-| `now` | (write here) | (write here) |
-| `blocked` | (write here) | (write here) |
-| `existing` | (write here) | (write here) |
-| returns | (write here) | (write here) |
-
-### 2.5 Initial assumptions and manual checks
-
-**Assumptions:**
-
-1. (write here)
-2. (write here)
-
 **Checked manually:**
 
-- (write here)
+- Resize the browser to a narrow mobile width and check that the page remains usable.
+- Review the validation messages to make sure they clearly explain why a request is unavailable.
+- Check that an availability check does not change the existing bookings.
 
 ## 3. Python v1 review
 
@@ -113,17 +81,24 @@ I will resize the browser to a narrow mobile width and check that the page remai
 
 | Branch in v1 (quoted) | AC | Satisfies it? | Why |
 | --- | --- | --- | --- |
-| (write here) | (write here) | (write here) | (write here) |
-| (write here) | (write here) | (write here) | (write here) |
-| (write here) | (write here) | (write here) | (write here) |
-| (write here) | (write here) | (write here) | (write here) |
+| `if blocked:` | AC3 | Yes | A blocked room causes an immediate `False` result, so requests for that room are rejected. |
+| `if not (0 <= start < end <= 1440 and start > now):` | AC1 | Yes | This rejects times outside the allowed day range, non-positive or reversed intervals, and any start that is equal to or earlier than `now`. |
+| `if (end - start) > 120:` | AC2 | Yes | This rejects durations longer than 120 minutes while allowing a duration of exactly 120 minutes. |
+| `if start < b_end and end > b_start:` | AC4 | Yes | This detects an overlap between the requested interval and an existing interval. The strict comparisons allow intervals that meet exactly at an endpoint. |
 
 ## 4. Prototype v1 in Bolt.new
 
 **Prompt as sent:**
 
 ~~~~text
-(paste here)
+Build a small responsive Smart Campus Room Availability Checker. Requirements: 
+AC1: Accept a candidate interval only when 0 ≤ start < end ≤ 1440 and start is after the supplied current time.
+AC2: Reject a booking longer than 120 minutes.
+AC3: Reject the request when the selected room is blocked.
+AC4: Reject any interval that overlaps an existing booking; touching endpoints are allowed.
+AC5: Show a clear Available / Unavailable decision without changing the existing booking data.
+AC6: The page remains usable at desktop and narrow/mobile width and gives understandable validation feedback. 
+Use fictional sample data only. Keep the implementation simple and within one-page scope. Do not add authentication, backend services, analytics, or unrelated features. After building, briefly list the main files/components you created.
 ~~~~
 
 <!-- Main generated files or components, with their path inside web/original/
@@ -131,12 +106,16 @@ I will resize the browser to a narrow mobile width and check that the page remai
 
 | Generated file or component | Path | Its role |
 | --- | --- | --- |
-| (write here) | (write here) | (write here) |
-| (write here) | (write here) | (write here) |
+| `App.tsx` | `src/App.tsx` | Composes the page, manages the selected room and time inputs, runs the availability check, and displays its result. |
+| `availability.ts` | `src/utils/availability.ts` | Checks the requested interval against AC1–AC4 and returns an availability decision with reasons without changing booking data. |
+| `TimeInput.tsx` | `src/components/TimeInput.tsx` | Renders a labeled time input and optional validation hint or invalid state. |
 
 **What v1 does:**
 
-- (write here)
+- Shows a responsive page with a room selector, time inputs, and a visual 24-hour timeline.
+- Checks availability and displays an Available or Unavailable result.
+- Uses fictional sample bookings and does not modify the existing booking data.
+- Includes sample rooms, including a blocked room with a maintenance reason.
 
 ## 5. Test cases — executed on both artifacts
 
@@ -150,18 +129,18 @@ I will resize the browser to a narrow mobile width and check that the page remai
 
 | Case | Name | Input | Expected | Python v1 | Python final | Page v1 | Page final |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | Touching | 660–720 | Available | | | | |
-| T2 | Overlap | 630–690 | Unavailable | | | | |
-| T3 | Blocked | 660–720, blocked | Unavailable | | | | |
-| T4 | Exactly 120 min | 720–840 | Available | | | | |
-| T5 | 121 min | 720–841 | Unavailable | | | | |
-| T6 | Starts now | 540–570 | Unavailable | | | | |
-| T7 | Reversed | 720–660 | Unavailable | | | | |
-| T8 | Ends at midnight | 1380–1440 | Available | | | | |
-| T9 | Past midnight | 1380–1441 | Unavailable | | | | |
-| T10 | Second booking | 720–780, existing (600–660), (700–760) | Unavailable | | | | |
-| T11 | Same check twice | 660–720, twice | Available | | | | |
-| T12 | Narrow screen | T1 at ~375 px wide | Available | n/a | n/a | | |
+| T1 | Touching | 660–720 | Available | True | True | Available | Available |
+| T2 | Overlap | 630–690 | Unavailable | False | False | Unavailable | Unavailable |
+| T3 | Blocked | 660–720, blocked | Unavailable | False | False | Unavailable | Unavailable |
+| T4 | Exactly 120 min | 720–840 | Available | True | True | Available | Available |
+| T5 | 121 min | 720–841 | Unavailable | False | False | Unavailable | Unavailable |
+| T6 | Starts now | 540–570 | Unavailable | False | False | Unavailable | Unavailable |
+| T7 | Reversed | 720–660 | Unavailable | False | False | Unavailable | Unavailable |
+| T8 | Ends at midnight | 1380–1440 | Available | True | True | Unavailable | Available |
+| T9 | Past midnight | 1380–1441 | Unavailable | False | False | Unavailable | Unavailable |
+| T10 | Second booking | 720–780, existing (600–660), (700–760) | Unavailable | False | False | Not testable | Not testable |
+| T11 | Same check twice | 660–720, twice | Available | True | True | Available | Available |
+| T12 | Narrow screen | T1 at ~375 px wide | Available | n/a | n/a | Available | Available |
 
 ## 6. Traceability
 
@@ -170,27 +149,21 @@ I will resize the browser to a narrow mobile width and check that the page remai
 
 | AC | Implementation / file | Test input | Expected | v1 actual | Final actual |
 | --- | --- | --- | --- | --- | --- |
-| AC1 | (write here) | (write here) | (write here) | (write here) | (write here) |
-| AC2 | (write here) | (write here) | (write here) | (write here) | (write here) |
-| AC3 | (write here) | (write here) | (write here) | (write here) | (write here) |
-| AC4 | (write here) | (write here) | (write here) | (write here) | (write here) |
-| AC5 | (write here) | (write here) | (write here) | (write here) | (write here) |
-| AC6 | (write here) | (write here) | (write here) | (write here) | (write here) |
+| AC1 | `code/booking.py`; `web/original/src/utils/availability.ts`; `web/final/src/utils/availability.ts`, `time.ts`, `components/TimeInput.tsx` | T6–T9 | T6, T7, T9 Unavailable; T8 Available | Python: T6 False, T7 False, T8 True, T9 False; page: T6–T7 Unavailable, T8–T9 Unavailable | Python: same results; page: T6–T7 Unavailable, T8 Available, T9 Unavailable |
+| AC2 | `code/booking.py`; `web/original/src/utils/availability.ts`; `web/final/src/utils/availability.ts` | T4–T5 | T4 Available; T5 Unavailable | Python: T4 True, T5 False; page: T4 Available, T5 Unavailable | Python: same results; page: T4 Available, T5 Unavailable |
+| AC3 | `code/booking.py`; `web/original/src/utils/availability.ts`, `src/data/sampleData.ts`; `web/final/src/utils/availability.ts`, `src/data/sampleData.ts` | T3 | Unavailable | Python False; page Unavailable | Python False; page Unavailable |
+| AC4 | `code/booking.py`; `web/original/src/utils/availability.ts`; `web/final/src/utils/availability.ts` | T1, T2, T10 | T1 Available; T2 and T10 Unavailable | Python: True, False, False; page: T1 Available, T2 Unavailable, T10 Not testable | Python: same results; page: T1 Available, T2 Unavailable, T10 Not testable |
+| AC5 | `code/booking.py`; `web/original/src/App.tsx`, `src/utils/availability.ts`; `web/final/src/App.tsx`, `src/utils/availability.ts` | T11 | Available on both checks; existing bookings unchanged | Python: second call True; input unchanged. Page: Available on both checks | Python: second call True; input unchanged. Page: Available on both checks; booking data unchanged |
+| AC6 | `web/original/src/components/TimeInput.tsx`, `ResultBanner.tsx`, `App.tsx`; `web/final/src/components/TimeInput.tsx`, `ResultBanner.tsx`, `App.tsx` | T7, T12 | T7 Unavailable with understandable feedback; T12 usable and Available | Python: T7 False, T12 n/a; page: T7 Unavailable, T12 Available | Python: T7 False, T12 n/a; page: T7 Unavailable, T12 Available at about 375 px |
 
 ## 7. Issue log
 
-<!-- At least two, from v1 — a functional defect and a usability or code-quality issue where you
-     have them. If every case passed on v1, log the preventive cleanup and say why.
-     Reproduction names a case (T1-T12) or an AC. Priority: High, Medium or Low.
-     Prompt / change: the focused prompt you sent, and what changed. Never "make it better". -->
-
 | # | Issue | Reproduction | Priority | Prompt / change | Retest result |
 | --- | --- | --- | --- | --- | --- |
-| 1 | (write here) | (write here) | (write here) | (write here) | (write here) |
-| 2 | (write here) | (write here) | (write here) | (write here) | (write here) |
+| 1 | The requested end time could not be set to 24:00. | AC1 permits an end time of 1440 minutes. In v1, try to enter an interval ending at 24:00; the native time input stops at 23:59, so this valid boundary cannot be entered. | Medium | Prompt: “In the current prototype, trying to enter a request that ends at 24:00 produces no valid input, but AC1 requires an end time up to 1440 minutes (24:00). Make the smallest change that fixes this behavior. Preserve the other acceptance criteria. Explain which file/component you changed and why.” Change: updated `src/components/TimeInput.tsx`, `src/utils/time.ts`, and `src/App.tsx` so the requested end accepts and displays 24:00 as 1440. | Week 06 retest: entered an interval ending at 24:00 and reran T1–T9; the reported results passed. I will add the SIS final screenshot as `evidence/after-1.png`. |
+| 2 | The previous availability result remained visible after changing the request. | Run a check, then change the selected room or a time without checking again. In v1, the old result remains beside the changed inputs, which can be misleading under AC5–AC6. | Low | Prompt: “Review only the request form and result feedback for confusing UI feedback when a user changes the selected room or requested times after running a check. Suggest one small cleanup. Do not add features or redesign the whole application. Implement it only if it preserves AC1–AC6.” Change: updated `src/App.tsx` so changing the room, current time, start, or end clears the previous result. | Week 06 retest: changed the room and time after a check; the stale result cleared. Reran T1–T9; the reported results passed. |
 
-**Before / after:** `evidence/before-1.png` → `evidence/after-1.png` show issue (write here)
-
+**Before / after:** `evidence/before-1.png` → `evidence/after-1.png` show issue 1: the v1 time input stops at 23:59, while the final version accepts 24:00. `evidence/before-2.png` → `evidence/after-2.png` show issue 2: the old availability result remained visible after changing the room or time; the final version clears the stale result.
 ## 8. Critique decisions
 
 <!-- The AI's review against AC1-AC6 (stage C), claim by claim. At least three rows.
@@ -225,8 +198,9 @@ I will resize the browser to a narrow mobile width and check that the page remai
 
 | Tool | Context it used | Tools or permissions | Observed or assumed |
 | --- | --- | --- | --- |
-| (write here) | (write here) | (write here) | (write here) |
-| (write here) | (write here) | (write here) | (write here) |
+| (write here) | `App.tsx` | `src/App.tsx` | Composes the page, manages the selected room and time inputs, runs the availability check, and displays its result. |
+| `availability.ts` | `src/utils/availability.ts` | Checks the requested interval against AC1–AC4 and returns an availability decision with reasons without changing booking data. |
+| `TimeInput.tsx` | `src/components/TimeInput.tsx` | Renders a labeled time input and optional validation hint or invalid state. | (write here) |
 | (write here) | (write here) | (write here) | (write here) |
 
 ### 9.3 Checkpoint and dependability
@@ -342,7 +316,30 @@ I will resize the browser to a narrow mobile width and check that the page remai
      code/ — the part ending in "Ran N tests" and OK or FAILED. -->
 
 ~~~~text
-(paste here)
+PS C:\Users\ARnur\Desktop\software enginering\se-practice\week-05\code> python -m unittest -v test_booking.py
+test_blocked_room_rejected (test_booking.BookingTests.test_blocked_room_rejected) ... ok
+test_day_bound_exceeded_rejected (test_booking.BookingTests.test_day_bound_exceeded_rejected) ... ok
+test_day_bound_upper_limit_allowed (test_booking.BookingTests.test_day_bound_upper_limit_allowed) ... ok
+test_empty_existing_allowed (test_booking.BookingTests.test_empty_existing_allowed) ... ok
+test_empty_list_stays_empty_after_an_accepted_booking (test_booking.BookingTests.test_empty_list_stays_empty_after_an_accepted_booking) ... ok
+test_enclosed_overlap_rejected (test_booking.BookingTests.test_enclosed_overlap_rejected) ... ok
+test_enclosing_overlap_spans_existing_rejected (test_booking.BookingTests.test_enclosing_overlap_spans_existing_rejected) ... ok
+test_every_return_path_is_a_real_bool_and_input_untouched (test_booking.BookingTests.test_every_return_path_is_a_real_bool_and_input_untouched) ... ok
+test_exactly_two_hours_allowed (test_booking.BookingTests.test_exactly_two_hours_allowed) ... ok
+test_existing_elements_not_mutated_during_checks (test_booking.BookingTests.test_existing_elements_not_mutated_during_checks) ... ok
+test_existing_input_not_mutated (test_booking.BookingTests.test_existing_input_not_mutated) ... ok
+test_multiple_existing_overlap_rejected (test_booking.BookingTests.test_multiple_existing_overlap_rejected) ... ok
+test_over_two_hours_rejected (test_booking.BookingTests.test_over_two_hours_rejected) ... ok
+test_partial_overlap_rejected (test_booking.BookingTests.test_partial_overlap_rejected) ... ok
+test_reversed_times_rejected (test_booking.BookingTests.test_reversed_times_rejected) ... ok
+test_starts_now_rejected (test_booking.BookingTests.test_starts_now_rejected) ... ok
+test_touching_end_is_allowed (test_booking.BookingTests.test_touching_end_is_allowed) ... ok
+test_zero_length_duration_rejected (test_booking.BookingTests.test_zero_length_duration_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.032s
+
+OK
 ~~~~
 
 ### 12.2 Path B only — three faults you planted
