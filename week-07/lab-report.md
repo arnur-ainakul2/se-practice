@@ -81,6 +81,73 @@ five columns.
 
 ```text
 (paste here)
+Generate tests for the existing booking function using Vitest. Use AC1–AC6 and the reviewed case table below.
+
+Import the real function used by the page. Keep its code unchanged. Use fixed time and fresh fixtures. Assert exact decisions and unchanged booking data.
+
+Return the test file, run command, and AC mapping. Flag unclear requirements. We will run the tests ourselves.
+
+Case table:
+
+| ID | Candidate / changed input | Expected | AC | Reason |
+| --- | --- | --- | --- | --- |
+| T01 | 660–720 (touching after) | true | AC4 | The existing booking ends at 660, exactly when this request starts, so they only touch. |
+| T02 | 540–570 (starts now) | false | AC1 | The request starts at the current time, but AC1 requires a later start. |
+| T03 | 720–720 (zero duration) | false | AC1 | Start and end are equal, so this interval has no positive duration. |
+| T04 | 750–720 (reversed) | false | AC1 | The start is later than the end, so the interval is reversed. |
+| T05 | 1380–1441 (past day end) | false | AC1 | The end is 1441, which is beyond the day's 1440-minute limit. |
+| T06 | 720–840 (120 minutes) | true | AC2 | This request is exactly 120 minutes; AC2 rejects only longer requests. |
+| T07 | 720–841 (121 minutes) | false | AC2 | This request lasts 121 minutes, exceeding the 120-minute limit. |
+| T08 | 570–600 (touching before) | true | AC4 | The request ends at 600, exactly when the existing booking starts, so they only touch. |
+| T09 | 630–690 (partial overlap) | false | AC4 | The intervals share the time from 630 to 660. |
+| T10 | 570–690 (contains booking) | false | AC4 | The request covers the existing booking from 600 to 660. |
+| T11 | 615–645 (inside booking) | false | AC4 | The whole request falls within the existing 600–660 booking. |
+| T12 | 600–660 (identical interval) | false | AC4 | The requested interval is exactly the existing booking, so they overlap. |
+| T13 | 660–720, blocked = true | false | AC3 | The selected room is blocked, so the request must be rejected. |
+| T14 | 630–690, bookings = [] | true | AC4 | There are no existing bookings to overlap this otherwise valid request. |
+| AC5 | An Available request; bookings after the call equal bookings before | true, data unchanged | AC5 | The request is available, and checking availability must leave the existing booking data unchanged. |
+| X1 | 1380–1440 (ends at day boundary) | true | AC1 | 1440 is the allowed end-of-day limit, and the 60-minute request starts after now. |
+| X2 | 650–710, bookings = [{ start: 600, end: 660 }, { start: 700, end: 760 }] | false | AC4 | The request overlaps both existing bookings, so it is unavailable. |
+
+Current booking.ts code:
+
+```ts
+import { MAX_DURATION_MINUTES, MINUTES_PER_DAY } from "@/utils/time";
+
+export interface CanBookInput {
+  start: number;
+  end: number;
+  now: number;
+  blocked: boolean;
+  bookings: { start: number; end: number }[];
+}
+
+export function canBook({
+  start,
+  end,
+  now,
+  blocked,
+  bookings,
+}: CanBookInput): boolean {
+  if (
+    !Number.isFinite(start) ||
+    !Number.isFinite(end) ||
+    start < 0 ||
+    end > MINUTES_PER_DAY ||
+    start >= end
+  ) {
+    return false;
+  }
+
+  if (start <= now) return false;
+  if (end - start > MAX_DURATION_MINUTES) return false;
+  if (blocked) return false;
+
+  const overlaps = bookings.filter(
+    (booking) => start < booking.end && booking.start < end
+  );
+  return overlaps.length === 0;
+}
 ```
 
 **The assistant's answer: run command, AC mapping and any unclear requirements it flagged,
@@ -88,6 +155,161 @@ pasted unedited.** Its test file goes to `suites/first/` and is not pasted here:
 
 ```text
 (paste here)
+Here is the Vitest test suite, run command, and requirement mapping for the `canBook` function.
+
+### Unclear Requirements Flag
+
+**Missing AC6:** The prompt requests using AC1–AC6, but the provided case table and the codebase only mention AC1 through AC5. No test cases or rules were provided for AC6. The tests below cover all provided cases (AC1–AC5). Please clarify the acceptance criteria for AC6.
+
+### Run Command
+
+```bash
+npx vitest run booking.test.ts
+
+```
+
+### Test File: `booking.test.ts`
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { canBook, type CanBookInput } from "./booking"; // Adjust path if necessary
+
+describe("canBook()", () => {
+  // Fresh fixtures factory to prevent mutation bleed and guarantee independent tests
+  const getBaseInput = (): Omit<CanBookInput, "start" | "end"> => ({
+    now: 540, // Fixed time based on T02
+    blocked: false,
+    bookings: [{ start: 600, end: 660 }], // Default existing booking derived from T01, T08-T12
+  });
+
+  describe("AC1: Interval validity, day limits, and future start times", () => {
+    it("T02: rejects if start time is equal to current 'now' (540-570)", () => {
+      const input = { ...getBaseInput(), start: 540, end: 570 };
+      expect(canBook(input)).toBe(false);
+    });
+
+    it("T03: rejects zero duration intervals (720-720)", () => {
+      const input = { ...getBaseInput(), start: 720, end: 720 };
+      expect(canBook(input)).toBe(false);
+    });
+
+    it("T04: rejects reversed intervals (750-720)", () => {
+      const input = { ...getBaseInput(), start: 750, end: 720 };
+      expect(canBook(input)).toBe(false);
+    });
+
+    it("T05: rejects intervals extending past the end of the day limit (1380-1441)", () => {
+      const input = { ...getBaseInput(), start: 1380, end: 1441 };
+      expect(canBook(input)).toBe(false);
+    });
+
+    it("X1: allows intervals ending exactly at the day boundary (1380-1440)", () => {
+      const input = { ...getBaseInput(), start: 1380, end: 1440 };
+      expect(canBook(input)).toBe(true);
+    });
+  });
+
+  describe("AC2: Maximum duration limits", () => {
+    it("T06: allows a request of exactly 120 minutes (720-840)", () => {
+      const input = { ...getBaseInput(), start: 720, end: 840 };
+      expect(canBook(input)).toBe(true);
+    });
+
+    it("T07: rejects a request exceeding the 120-minute limit (720-841)", () => {
+      const input = { ...getBaseInput(), start: 720, end: 841 };
+      expect(canBook(input)).toBe(false);
+    });
+  });
+
+  describe("AC3: Room block status", () => {
+    it("T13: rejects a valid interval if the room is blocked", () => {
+      const input = { ...getBaseInput(), start: 660, end: 720, blocked: true };
+      expect(canBook(input)).toBe(false);
+    });
+  });
+
+  describe("AC4: Overlapping with existing bookings", () => {
+    it("T01: allows booking that touches the end of an existing booking (660-720)", () => {
+      const input = { ...getBaseInput(), start: 660, end: 720 };
+      expect(canBook(input)).toBe(true);
+    });
+
+    it("T08: allows booking that touches the start of an existing booking (570-600)", () => {
+      const input = { ...getBaseInput(), start: 570, end: 600 };
+      expect(canBook(input)).toBe(true);
+    });
+
+    it("T09: rejects partial overlap ending inside an existing booking (630-690)", () => {
+      const input = { ...getBaseInput(), start: 630, end: 690 };
+      expect(canBook(input)).toBe(false);
+    });
+
+    it("T10: rejects booking that entirely contains an existing booking (570-690)", () => {
+      const input = { ...getBaseInput(), start: 570, end: 690 };
+      expect(canBook(input)).toBe(false);
+    });
+
+    it("T11: rejects booking that is entirely inside an existing booking (615-645)", () => {
+      const input = { ...getBaseInput(), start: 615, end: 645 };
+      expect(canBook(input)).toBe(false);
+    });
+
+    it("T12: rejects booking with identical interval to an existing booking (600-660)", () => {
+      const input = { ...getBaseInput(), start: 600, end: 660 };
+      expect(canBook(input)).toBe(false);
+    });
+
+    it("T14: allows booking when there are no existing bookings (630-690)", () => {
+      const input = { ...getBaseInput(), start: 630, end: 690, bookings: [] };
+      expect(canBook(input)).toBe(true);
+    });
+
+    it("X2: rejects booking that overlaps multiple existing bookings (650-710)", () => {
+      const input = {
+        ...getBaseInput(),
+        start: 650,
+        end: 710,
+        bookings: [
+          { start: 600, end: 660 },
+          { start: 700, end: 760 },
+        ],
+      };
+      expect(canBook(input)).toBe(false);
+    });
+  });
+
+  describe("AC5: Pure function constraints", () => {
+    it("AC5: leaves the existing booking data completely unchanged", () => {
+      const originalBookings = [{ start: 600, end: 660 }];
+      // Create a fresh deep copy to detect potential inner object mutations
+      const input = {
+        ...getBaseInput(),
+        start: 660,
+        end: 720,
+        bookings: [{ start: 600, end: 660 }],
+      };
+
+      const result = canBook(input);
+
+      expect(result).toBe(true); // Sanity check that it's a valid Available request
+      expect(input.bookings).toEqual(originalBookings);
+      expect(input.bookings).not.toBe(originalBookings); // Ensures we are testing against mutation on our passed copy
+    });
+  });
+});
+
+```
+
+### Acceptance Criteria Mapping
+
+| Criteria | Covered Test IDs | Goal Checked |
+| --- | --- | --- |
+| **AC1** | T02, T03, T04, T05, X1 | Requires strictly positive duration, later start time than `now`, and an end time $\le$ `MINUTES_PER_DAY`. |
+| **AC2** | T06, T07 | Rejects requests whose duration is greater than `MAX_DURATION_MINUTES`. |
+| **AC3** | T13 | Ensures `blocked: true` results in an immediate rejection regardless of valid times. |
+| **AC4** | T01, T08, T09, T10, T11, T12, T14, X2 | Validates that intervals strictly inside or spanning across existing bookings fail, but touching boundaries succeed. |
+| **AC5** | AC5 | Pure function test asserting `bookings` array reference and internal properties are unmutated. |
+| **AC6** | *None* | **Flagged above:** Missing from the case table and requirements. |
 ```
 
 The first suite was saved to `suites/first/` **before** I changed anything in it: yes / no
