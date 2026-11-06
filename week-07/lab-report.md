@@ -29,15 +29,17 @@ grader find your answers by them. You can add rows to any table, but never remov
 
 | | |
 | --- | --- |
-| File and function (or "inside the page component") | |
-| Its inputs | |
-| What it returned | |
-| How the page used it | |
+| File and function (or "inside the page component") | `src/utils/availability.ts` — `checkAvailability` |
+| Its inputs | `CheckInput`: `room`, `start`, `end`, `currentTime`, `existingBookings` |
+| What it returned | A `CheckResult` object: decision (`available` / `unavailable`), reasons, room name, start and end |
+| How the page used it | `App.tsx` passed the selected room, times in minutes, and bookings to `checkAvailability`; it saved the returned result with `setResult` for `ResultBanner` |
 
 **What I changed to extract `canBook`.** Say which file it now lives in, what you moved, and why
 the behaviour did not change. Also say which file of the page now calls it. 40 words or more.
 
 <!-- Write below this line -->
+
+I added `src/booking.ts` with `canBook({ start, end, now, blocked, bookings })` and moved the same interval validity, current-time, duration, blocked-room, and overlap conditions from `src/utils/availability.ts` into it. The overlap check still allows touching endpoints. `App.tsx` now passes the selected room's bookings and blocked state to `canBook`; the existing availability helper still supplies the explanatory messages shown by the page. I installed Vitest and added the test script. Vitest 5 requires Vite 6.4 or newer, so I updated Vite and its React plugin to compatible versions. The production build and TypeScript check pass. The browser UI check is still pending because this session could not safely select the current Chrome page.
 
 ---
 
