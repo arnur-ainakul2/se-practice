@@ -79,8 +79,7 @@ five columns.
 **The prompt exactly as I sent it.** Use the deck's prompt with `[our test framework]` replaced by
 `Vitest`, followed by the case table from section 3:
 
-```text
-(paste here)
+````text
 Generate tests for the existing booking function using Vitest. Use AC1–AC6 and the reviewed case table below.
 
 Import the real function used by the page. Keep its code unchanged. Use fixed time and fresh fixtures. Assert exact decisions and unchanged booking data.
@@ -149,12 +148,12 @@ export function canBook({
   return overlaps.length === 0;
 }
 ```
+````
 
 **The assistant's answer: run command, AC mapping and any unclear requirements it flagged,
 pasted unedited.** Its test file goes to `suites/first/` and is not pasted here:
 
-```text
-(paste here)
+````text
 Here is the Vitest test suite, run command, and requirement mapping for the `canBook` function.
 
 ### Unclear Requirements Flag
@@ -310,7 +309,7 @@ describe("canBook()", () => {
 | **AC4** | T01, T08, T09, T10, T11, T12, T14, X2 | Validates that intervals strictly inside or spanning across existing bookings fail, but touching boundaries succeed. |
 | **AC5** | AC5 | Pure function test asserting `bookings` array reference and internal properties are unmutated. |
 | **AC6** | *None* | **Flagged above:** Missing from the case table and requirements. |
-```
+````
 
 The first suite was saved to `suites/first/` **before** I changed anything in it: yes / no
 
@@ -325,8 +324,9 @@ requests* · *mocked booking function*, or your own) and the AC that decides it.
 
 | # | Test or part of the suite | What is weak or wrong | Decision: accept / revise / reject | AC or reason |
 | --- | --- | --- | --- | --- |
-| 1 | | | accept / revise / reject | |
-| 2 | | | accept / revise / reject | |
+| 1 | T01–T14, X1, X2 | The tests use exact boolean assertions, cover accepted and rejected cases, import the real `./booking` module, and create fresh fixtures with a fixed `now`. | accept | AC1–AC4 determine the expected decisions; there are no mocks, skipped tests, or shared mutable fixtures. |
+| 2 | AC5 booking-data check | The expected array is constructed separately instead of copying `input.bookings` immediately before the call. Revise this in the final suite to snapshot the actual input bookings before calling `canBook`. | revise | AC5 requires comparing the bookings after an Available call with a copy taken before that call. Keep `suites/first/` unchanged. |
+| 3 | Gemini's AC6 flag | The assistant says AC6 is missing from the requirements. That is not a unit-suite gap: AC6 is checked through the page's manual UI behavior. | reject | The README separates unit tests for `canBook` from manual UI checks; do the AC6 checks in Part 7. |
 
 ---
 
@@ -339,7 +339,11 @@ The **real** terminal output of the first run of the first suite, pasted unedite
 is not a run.
 
 ```text
-(paste here)
+ RUN  v5.1.0 C:/Users/ARnur/Desktop/Software Enginering/se-practice/week-07/app
+
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
 ```
 
 **Each failure, diagnosed** (the deck's table: import/runner error · assertion mismatch · result
@@ -347,16 +351,36 @@ changing per run · no tests discovered). Write `none` in the first row if nothi
 
 | Failing test | Observed failure | First check | Test repair or implementation fix? | Action taken |
 | --- | --- | --- | --- | --- |
-| | | | | |
+| none | No failures; the first suite passed all 17 tests. | — | — | No setup or implementation fix was needed from this run. |
 
 ### 6.2 The improvement prompt
 
 The deck's improvement prompt exactly as sent, followed by the actual output from 6.1. Then
 paste the assistant's answer, unedited:
 
-```text
-(paste here)
-```
+````text
+Review this test suite against AC1–AC6 and our case table. Identify incorrect expectations, weak assertions, duplicated cases, and missing boundaries.
+
+For each proposed change, explain the requirement and the defect it could detect. Improve the tests without changing correct expectations to match buggy behavior.
+
+Use the actual failure output below. Separate test repairs from implementation fixes.
+
+ RUN  v5.1.0 C:/Users/ARnur/Desktop/Software Enginering/se-practice/week-07/app
+
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+
+Assistant review:
+
+The first run passed all 17 tests, so it revealed no implementation defect and no incorrect expected value. Keep the implementation unchanged.
+
+The suite imports the real `./booking` function, uses a fixed numeric `now`, creates a fresh fixture for each test, asserts exact boolean results, and contains separate named tests for T01–T14, AC5, X1, and X2. The touching, overlap, duration, blocked-room, and day-boundary cases match the plan. No mocks, skipped tests, focused tests, or table-driven tests were found.
+
+Revise the AC5 assertion in the final copy: construct the Available input, make `const bookingsBefore = structuredClone(input.bookings)` immediately before calling `canBook(input)`, then compare `input.bookings` with `bookingsBefore`. The generated suite compares against a separately constructed array rather than a snapshot of the actual input. A direct snapshot checks that the call leaves the exact booking data unchanged, as AC5 requires. Keep the original suite in `suites/first/` untouched.
+
+The AC6 flag is not a missing unit test. AC6 concerns visible page validation and mobile usability; those checks belong to the manual UI task. No extra `canBook` test is needed for AC6.
+````
 
 ### 6.3 The final run
 
@@ -365,7 +389,11 @@ change and after restoring the correct code from section 7. Every test must pass
 is still open, leave its test failing and explain it in 9.1.
 
 ```text
-(paste here)
+ RUN  v5.1.0 C:/Users/ARnur/Desktop/Software Enginering/se-practice/week-07/app
+
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
 ```
 
 ---

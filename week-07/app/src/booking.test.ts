@@ -107,20 +107,18 @@ describe("canBook()", () => {
 
   describe("AC5: Pure function constraints", () => {
     it("AC5: leaves the existing booking data completely unchanged", () => {
-      const originalBookings = [{ start: 600, end: 660 }];
-      // Create a fresh deep copy to detect potential inner object mutations
       const input = {
         ...getBaseInput(),
         start: 660,
         end: 720,
         bookings: [{ start: 600, end: 660 }],
       };
+      const bookingsBefore = structuredClone(input.bookings);
 
       const result = canBook(input);
 
       expect(result).toBe(true); // Sanity check that it's a valid Available request
-      expect(input.bookings).toEqual(originalBookings);
-      expect(input.bookings).not.toBe(originalBookings); // Ensures we are testing against mutation on our passed copy
+      expect(input.bookings).toEqual(bookingsBefore);
     });
   });
 });

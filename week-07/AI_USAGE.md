@@ -6,15 +6,15 @@ including anything an AI tool produced.
 
 | Tool | Exact model / plan | Used for | Which files it touched |
 | --- | --- | --- | --- |
-| | | the first test suite (Task 3) | |
-| | | the improvement prompt (Task 5) | |
-| Codex (OpenAI) | GPT-6 | Drafted reasons for the test cases in §3 | `lab-report.md` |
+| Gemini | Gemini 3.6 Flash | Generated the first test suite (Task 3) | `suites/first/booking.test.ts` |
+| Codex (OpenAI) | GPT-6 | Reviewed the first suite, answered the improvement prompt, and revised the final AC5 assertion | `lab-report.md`, `app/src/booking.test.ts` |
+| Codex (OpenAI) | GPT-6 | Drafted case reasons and first-suite review decisions | `lab-report.md` |
 
 **I used an assistant to extract `canBook` (Task 1), or to fix a defect in it:** yes / no
 <!-- If "yes": which change, in which file, and how you checked that the behaviour did not change. -->
 
 **I used another assistant as well (to explain a failure, to draft text in lab-report.md, …):** yes
-<!-- Codex (OpenAI), GPT-6: drafted the reasons in lab-report.md §3. -->
+<!-- Codex (OpenAI), GPT-6: drafted reasons in §3, review decisions in §5, and improvement review in §6.2. -->
 
 **`suites/first/` holds the assistant's first test file exactly as it generated it:** yes / no
 
