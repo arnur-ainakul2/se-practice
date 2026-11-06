@@ -8,13 +8,13 @@ including anything an AI tool produced.
 | --- | --- | --- | --- |
 | | | the first test suite (Task 3) | |
 | | | the improvement prompt (Task 5) | |
-| | | | |
+| Codex (OpenAI) | GPT-6 | Drafted reasons for the test cases in §3 | `lab-report.md` |
 
 **I used an assistant to extract `canBook` (Task 1), or to fix a defect in it:** yes / no
 <!-- If "yes": which change, in which file, and how you checked that the behaviour did not change. -->
 
-**I used another assistant as well (to explain a failure, to draft text in lab-report.md, …):** yes / no
-<!-- If "yes": which one, the exact model, and for which section. -->
+**I used another assistant as well (to explain a failure, to draft text in lab-report.md, …):** yes
+<!-- Codex (OpenAI), GPT-6: drafted the reasons in lab-report.md §3. -->
 
 **`suites/first/` holds the assistant's first test file exactly as it generated it:** yes / no
 
