@@ -295,16 +295,16 @@ One row per defect. At least **BUG-A and BUG-B**. "Suspected cause" is your hypo
 
 | Check | yes / no |
 | --- | --- |
-| The file is plain UTF-8 text, named exactly `SKILL.md` (not `SKILL.md.txt`) | yes / no |
-| The first and the closing YAML delimiter are exactly three hyphens: `---` | yes / no |
-| `name` is lowercase with hyphens, and `description` says WHEN to use it | yes / no |
-| I read the whole file once: no passwords, API keys or private student data | yes / no |
+| The file is plain UTF-8 text, named exactly `SKILL.md` (not `SKILL.md.txt`) | yes |
+| The first and the closing YAML delimiter are exactly three hyphens: `---` | yes |
+| `name` is lowercase with hyphens, and `description` says WHEN to use it | yes |
+| I read the whole file once: no passwords, API keys or private student data | yes |
 
 **The contents of `skills/bug-detector.zip`.** Paste the listing (Windows: open the ZIP and copy
 the paths; macOS/Linux: `unzip -l skills/bug-detector.zip`):
 
 ```text
-(paste here)
+C:\Users\ARnur\Desktop\Software Enginering\se-practice\week-08\skills\bug-detector.zip
 ```
 
 **Installation.** Where you uploaded it, what the upload said, and whether a new chat showed the
@@ -312,6 +312,9 @@ skill as enabled. If upload was not available, write `prompt-only simulation` an
 Screenshot of the result: `evidence/install.png`.
 
 <!-- Write below this line -->
+Uploaded `bug-detector.zip` directly to the Claude Skills interface (`Settings` -> `Skills` -> `bug-detector`)[cite: 1, 2]. The upload processed successfully without validation errors, correctly identifying `SKILL.md` inside the package[cite: 2]. The skill was enabled[cite: 1, 2] and confirmed active for new chats, displaying the complete 7-step debugging procedure[cite: 2].
+
+Screenshot saved to: `evidence/install.png`
 
 ---
 
