@@ -1,8 +1,8 @@
 # Week 08 — Lab report
 
-**Name:**
-**Group:**
-**Date:**
+**Name:**Ainakul Arnur
+**Group:**Monday 16:00
+**Date:**11/18/2026
 
 Fill in every section. **Do not delete, rename or renumber the headings.** The checker and the
 grader find your answers by them. You can add rows to any table, but never remove its header.
@@ -70,7 +70,100 @@ You copied the whole `canBook` function from `buggy/booking.ts` (or `.js`) over 
 nothing else. This is the real output:
 
 ```text
-(paste here)
+PS C:\Users\ARnur\Desktop\Software Enginering\se-practice\week-08\app> npx vitest run
+
+ RUN  v5.1.0 C:/Users/ARnur/Desktop/Software Enginering/se-practice/week-08/app
+
+ ❯ src/booking.test.ts (17 tests | 3 failed) 15ms
+   ❯ canBook() (17)
+     ✓ AC1: Interval validity, day limits, and future start times (5)
+       ✓ T02: rejects if start time is equal to current 'now' (540-570) 2ms
+       ✓ T03: rejects zero duration intervals (720-720) 0ms
+       ✓ T04: rejects reversed intervals (750-720) 0ms
+       ✓ T05: rejects intervals extending past the end of the day limit (1380-1441) 0ms
+       ✓ X1: allows intervals ending exactly at the day boundary (1380-1440) 0ms
+     ✓ AC2: Maximum duration limits (2)
+       ✓ T06: allows a request of exactly 120 minutes (720-840) 0ms
+       ✓ T07: rejects a request exceeding the 120-minute limit (720-841) 0ms
+     ✓ AC3: Room block status (1)
+       ✓ T13: rejects a valid interval if the room is blocked 0ms
+     ❯ AC4: Overlapping with existing bookings (8)
+       × T01: allows booking that touches the end of an existing booking (660-720) 7ms
+       × T08: allows booking that touches the start of an existing booking (570-600) 1ms
+       ✓ T09: rejects partial overlap ending inside an existing booking (630-690) 0ms
+       ✓ T10: rejects booking that entirely contains an existing booking (570-690) 0ms
+       ✓ T11: rejects booking that is entirely inside an existing booking (615-645) 0ms
+       ✓ T12: rejects booking with identical interval to an existing booking (600-660) 0ms
+       ✓ T14: allows booking when there are no existing bookings (630-690) 0ms
+       ✓ X2: rejects booking that overlaps multiple existing bookings (650-710) 0ms
+     ❯ AC5: Pure function constraints (1)
+       × AC5: leaves the existing booking data completely unchanged 1ms
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/booking.test.ts > canBook() > AC4: Overlapping with existing bookings > T01: allows booking that touches the end of an existing booking (660-720)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:61:30
+     59|     it("T01: allows booking that touches the end of an existing booking (660-720)", () => {
+     60|       const input = { ...getBaseInput(), start: 660, end: 720 };
+     61|       expect(canBook(input)).toBe(true);
+       |                              ^
+     62|     });
+     63|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/booking.test.ts > canBook() > AC4: Overlapping with existing bookings > T08: allows booking that touches the start of an existing booking (570-600)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:66:30
+     64|     it("T08: allows booking that touches the start of an existing booking (570-600)", () => {
+     65|       const input = { ...getBaseInput(), start: 570, end: 600 };
+     66|       expect(canBook(input)).toBe(true);
+       |                              ^
+     67|     });
+     68|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/booking.test.ts > canBook() > AC5: Pure function constraints > AC5: leaves the existing booking data completely unchanged
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:120:22
+    118|       const result = canBook(input);
+    119|
+    120|       expect(result).toBe(true); // Sanity check that it's a valid Available request
+       |                      ^
+    121|       expect(input.bookings).toEqual(bookingsBefore);
+    122|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 14 passed (17)
+   Start at  20:29:45
+   Duration  949ms (transform 50%, import 26%, tests 15%, worker 9%)
+
 ```
 
 ### 2.3 One failing test per bug
