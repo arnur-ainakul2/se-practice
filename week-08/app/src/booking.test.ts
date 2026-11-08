@@ -103,6 +103,19 @@ describe("canBook()", () => {
       };
       expect(canBook(input)).toBe(false);
     });
+
+    it("BUG-A: allows a request that touches existing bookings on both sides (630-690)", () => {
+      const input = {
+        ...getBaseInput(),
+        start: 630,
+        end: 690,
+        bookings: [
+          { start: 600, end: 630 },
+          { start: 690, end: 720 },
+        ],
+      };
+      expect(canBook(input)).toBe(true);
+    });
   });
 
   describe("AC5: Pure function constraints", () => {
@@ -118,6 +131,14 @@ describe("canBook()", () => {
       const result = canBook(input);
 
       expect(result).toBe(true); // Sanity check that it's a valid Available request
+      expect(input.bookings).toEqual(bookingsBefore);
+    });
+
+    it("BUG-B: leaves bookings unchanged for an available request touching nothing (720-780)", () => {
+      const input = { ...getBaseInput(), start: 720, end: 780 };
+      const bookingsBefore = structuredClone(input.bookings);
+
+      expect(canBook(input)).toBe(true);
       expect(input.bookings).toEqual(bookingsBefore);
     });
   });

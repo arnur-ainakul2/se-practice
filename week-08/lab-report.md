@@ -173,7 +173,106 @@ Run them **on the buggy code**. Both must fail here. That is the evidence that e
 its bug.
 
 ```text
-(paste here)
+PS C:\Users\ARnur\Desktop\Software Enginering\se-practice\week-08\app> npx vitest run
+
+ RUN  v5.1.0 C:/Users/ARnur/Desktop/Software Enginering/se-practice/week-08/app
+
+ ❯ src/booking.test.ts (19 tests | 5 failed) 24ms
+   ❯ canBook() (19)
+     ❯ AC4: Overlapping with existing bookings (9)
+       × T01: allows booking that touches the end of an existing booking (660-720) 9ms
+       × T08: allows booking that touches the start of an existing booking (570-600) 1ms
+       × BUG-A: allows a request that touches existing bookings on both sides (630-690) 1ms
+     ❯ AC5: Pure function constraints (2)
+       × AC5: leaves the existing booking data completely unchanged 2ms
+       × BUG-B: leaves bookings unchanged for an available request touching nothing (720-780) 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/booking.test.ts > canBook() > AC4: Overlapping with existing bookings > T01: allows booking that touches the end of an existing booking (660-720)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:61:30
+     59|       const input = { ...getBaseInput(), start: 660, end: 720 };
+     60|       expect(canBook(input)).toBe(true);
+       |                              ^
+
+ FAIL  src/booking.test.ts > canBook() > AC4: Overlapping with existing bookings > T08: allows booking that touches the start of an existing booking (570-600)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:66:30
+     64|       const input = { ...getBaseInput(), start: 570, end: 600 };
+     65|       expect(canBook(input)).toBe(true);
+       |                              ^
+
+ FAIL  src/booking.test.ts > canBook() > AC4: Overlapping with existing bookings > BUG-A: allows a request that touches existing bookings on both sides (630-690)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:117:30
+    115|         ],
+    116|       };
+    117|       expect(canBook(input)).toBe(true);
+       |                              ^
+
+ FAIL  src/booking.test.ts > canBook() > AC5: Pure function constraints > AC5: leaves the existing booking data completely unchanged
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/booking.test.ts:133:22
+    131|       const result = canBook(input);
+    132|
+    133|       expect(result).toBe(true); // Sanity check that it's a valid Available request
+       |                      ^
+
+ FAIL  src/booking.test.ts > canBook() > AC5: Pure function constraints > BUG-B: leaves bookings unchanged for an available request touching nothing (720-780)
+AssertionError: expected [ { start: 600, end: 660 }, …(1) ] to deeply equal [ { start: 600, end: 660 } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "end": 660,
+      "start": 600,
+    },
++   {
++     "end": 780,
++     "start": 720,
++   },
+  ]
+
+ ❯ src/booking.test.ts:142:30
+    140|       expect(canBook(input)).toBe(true);
+    141|       expect(input.bookings).toEqual(bookingsBefore);
+       |                              ^
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 14 passed (19)
+   Start at  20:36:07
+   Duration  1.44s (transform 50%, import 21%, tests 17%, worker 11%)
 ```
 
 ---
@@ -185,8 +284,8 @@ One row per defect. At least **BUG-A and BUG-B**. "Suspected cause" is your hypo
 
 | Defect | Test ID | Input | Expected | Actual | Suspected cause (line and why) |
 | --- | --- | --- | --- | --- | --- |
-| BUG-A | | | | | |
-| BUG-B | | | | | |
+| BUG-A | T01, T08 | T01: request 660–720 with existing booking 600–660; T08: request 570–600 with existing booking 600–660 | `true` (both requests only touch the existing booking) | `false` (both) | Inferred after discussing the failures with an assistant: the overlap check `if (start <= b.end && end >= b.start) return false;` treats shared endpoints as overlap. The inclusive comparisons reject both touching intervals. |
+| BUG-B | AC5 (not isolated by this run) | Request 660–720; existing booking 600–660 | Available (`true`) and bookings unchanged | `false`; the follow-up unchanged-array assertion is not reached | Inferred after discussing the failures with an assistant: the AC5 request touches the existing booking, so the overlap check above returns `false` before `bookings.push({ start, end })`. This run does not yet demonstrate array mutation; a non-overlapping Available request is needed to isolate BUG-B. |
 
 ---
 
