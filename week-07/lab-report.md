@@ -406,18 +406,100 @@ error does not count as detection.
 
 | Trial | Intentional change | Detected / Survived | Failing test ID(s) | If it survived: why, and what you added |
 | --- | --- | --- | --- | --- |
-| M1 | Reject duration >= 120 instead of > 120 | Detected / Survived | | |
-| M2 | Treat touching endpoints as an overlap | Detected / Survived | | |
-| M3 | Remove the blocked-room rejection | Detected / Survived | | |
+| M1 | Reject duration >= 120 instead of > 120 | Detected | T06 | — |
+| M2 | Treat touching endpoints as an overlap | Detected | T01, T08, AC5 | — |
+| M3 | Remove the blocked-room rejection | Detected | T13 | — |
 
 **The run of each mutant, pasted unedited.** Paste the `Tests` summary line and the failing test
 names at least:
 
+M1 run:
+
 ```text
-(paste here)
+ RUN  v5.1.0 C:/Users/ARnur/Desktop/Software Enginering/se-practice/week-07/app
+
+ ❯ src/booking.test.ts (17 tests | 1 failed) 16ms
+   ❯ canBook() (17)
+     ❯ AC2: Maximum duration limits (2)
+       × T06: allows a request of exactly 120 minutes (720-840) 8ms
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/booking.test.ts > canBook() > AC2: Maximum duration limits > T06: allows a request of exactly 120 minutes (720-840)
+AssertionError: expected false to be true // Object.is equality
+
+ ❯ src/booking.test.ts:42:30
+     40|     it("T06: allows a request of exactly 120 minutes (720-840)", () =>…
+     41|       const input = { ...getBaseInput(), start: 720, end: 840 };
+     42|       expect(canBook(input)).toBe(true);
+       |                              ^
+     43|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 passed (17)
 ```
 
-All three changes reverted, and the full suite run again (section 6.3): yes / no
+M2 run:
+
+```text
+ RUN  v5.1.0 C:/Users/ARnur/Desktop/Software Enginering/se-practice/week-07/app
+
+ ❯ src/booking.test.ts (17 tests | 3 failed) 22ms
+   ❯ canBook() (17)
+     ❯ AC4: Overlapping with existing bookings (8)
+       × T01: allows booking that touches the end of an existing booking (660-720) 9ms
+       × T08: allows booking that touches the start of an existing booking (570-600) 1ms
+     ❯ AC5: Pure function constraints (1)
+       × AC5: leaves the existing booking data completely unchanged 3ms
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/booking.test.ts > canBook() > AC4: Overlapping with existing bookings > T01: allows booking that touches the end of an existing booking (660-720)
+AssertionError: expected false to be true // Object.is equality
+ ❯ src/booking.test.ts:61:30
+
+ FAIL  src/booking.test.ts > canBook() > AC4: Overlapping with existing bookings > T08: allows booking that touches the start of an existing booking (570-600)
+AssertionError: expected false to be true // Object.is equality
+ ❯ src/booking.test.ts:66:30
+
+ FAIL  src/booking.test.ts > canBook() > AC5: Pure function constraints > AC5: leaves the existing booking data completely unchanged
+AssertionError: expected false to be true // Object.is equality
+ ❯ src/booking.test.ts:120:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 14 passed (17)
+```
+
+M3 run:
+
+```text
+ RUN  v5.1.0 C:/Users/ARnur/Desktop/Software Enginering/se-practice/week-07/app
+
+ ❯ src/booking.test.ts (17 tests | 1 failed) 21ms
+   ❯ canBook() (17)
+     ❯ AC3: Room block status (1)
+       × T13: rejects a valid interval if the room is blocked 9ms
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/booking.test.ts > canBook() > AC3: Room block status > T13: rejects a valid interval if the room is blocked
+AssertionError: expected true to be false // Object.is equality
+ ❯ src/booking.test.ts:54:30
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 passed (17)
+```
+
+All three changes reverted, and the full suite run again (section 6.3): yes
 
 ---
 
@@ -429,11 +511,11 @@ screenshot of each as `evidence/ui-1.png` … `evidence/ui-5.png`. Take **ui-4 a
 
 | # | Action | Expected observation | AC | What I observed | Pass / Fail / Not testable |
 | --- | --- | --- | --- | --- | --- |
-| U1 | Check 11:00–12:00, unblocked | Available, with the fixed sample booking | AC5 | | Pass / Fail / Not testable |
-| U2 | Enable blocked, then check again | Unavailable replaces the earlier result | AC3, AC5 | | Pass / Fail / Not testable |
-| U3 | Clear a required input and submit | Understandable validation feedback | AC6 | | Pass / Fail / Not testable |
-| U4 | Use a narrow (phone) width | Controls and result remain usable | AC6 | | Pass / Fail / Not testable |
-| U5 | Repeat the checks on the same data | Existing bookings remain unchanged | AC5 | | Pass / Fail / Not testable |
+| U1 | Check 11:00–12:00, unblocked | Available, with the fixed sample booking | AC5 | Beacon Lab 2B showed Available for 11:00–12:00; the 10:00 booking remained visible. | Pass |
+| U2 | Enable blocked, then check again | Unavailable replaces the earlier result | AC3, AC5 | Cascade Seminar Room showed Unavailable with its maintenance reason for 11:00–12:00. | Pass |
+| U3 | Clear a required input and submit | Understandable validation feedback | AC6 | With Requested start empty, the field was highlighted and the page showed a clear HH:MM validation message. | Pass |
+| U4 | Use a narrow (phone) width | Controls and result remain usable | AC6 | At phone width, the room choices, check button, and result remained visible and usable. | Pass |
+| U5 | Repeat the checks on the same data | Existing bookings remain unchanged | AC5 | Rechecking Beacon Lab 2B showed Available for 11:00–12:00; the 10:00 booking remained visible and the page said no bookings were modified. | Pass |
 
 ---
 
@@ -445,17 +527,17 @@ Use the same IDs as `known_fails` in `submission.yml`. Write `none` if the run i
 
 | Check | Why it stays |
 | --- | --- |
-| | |
+| none | All reported checks passed. |
 
 ### 9.2 Original and improved suites
 
 | Measure | First suite | Improved suite |
 | --- | --- | --- |
-| Executed / passed / failed | | |
-| Requirements with meaningful tests (AC IDs and gaps) | | |
-| Selected mutants detected | | |
-| Accepted / revised / rejected tests | | |
-| Remaining limitations | | |
+| Executed / passed / failed | 17 / 17 / 0 | 17 / 17 / 0 |
+| Requirements with meaningful tests (AC IDs and gaps) | AC1–AC5 have planned cases; AC6 is manual. No non-finite time case. | AC1–AC5 have planned cases; AC6 is manual. No non-finite time case. |
+| Selected mutants detected | Not mutation-tested separately. | 3/3: M1 by T06; M2 by T01 and T08 (also AC5); M3 by T13. |
+| Accepted / revised / rejected tests | Accepted T01–T14, X1 and X2; revised AC5; rejected the claim that AC6 needs a unit test. | Same cases retained; AC5 now snapshots the actual input before the call. |
+| Remaining limitations | No test for NaN inputs; AC5 compares against a separately constructed array. | No test for NaN inputs; ACs do not specify behavior for invalid existing bookings. |
 
 ### 9.3 What no AC decides
 
@@ -463,7 +545,7 @@ Call your function with `bookings = [{ start: 700, end: 650 }]` (a reversed exis
 and a request of 660–720. What does it return? Does any AC say what it should return? (This is
 the value you declare in `submission.yml` under `assumptions.invalid_existing_booking`.)
 
--
+With `now = 540` and `blocked = false`, `canBook` returns `true`. The candidate interval is valid, starts after now, lasts 60 minutes, and is not blocked. The overlap expression evaluates false for the reversed existing interval (`660 < 650` is false), so the function treats it as non-overlapping. No AC specifies how invalid existing bookings should be handled.
 
 ---
 
@@ -478,4 +560,4 @@ the value you declare in `submission.yml` under `assumptions.invalid_existing_bo
      contradicts AC2, and it failed on a correct canBook. If I had changed the code to make it
      pass, M1 would have become the real behaviour." -->
 
-<!-- Write your conclusion below this line -->
+The first suite left a boundary uncovered: it never tried a non-finite start or end. AC1 requires an interval within numeric day limits, so a faulty `canBook` that returned true for `NaN` could still pass those tests. I noticed this by comparing the cases with AC1. The first run passed 17/17; after revising AC5 to snapshot the actual bookings before the call, the final run also passed 17/17. That confirms the tested decisions and that this Available call preserves its fixture. The mutant runs add evidence: M1 failed T06, M2 failed T01 and T08, and M3 failed T13. The green run does not prove every possible input or page layout is correct; the manual screenshots are separate evidence. One limitation remains: invalid existing bookings are not defined by any AC. With `{start:700,end:650}`, the function returns true for 660–720, and the tests record that behavior without deciding whether it is desirable.
