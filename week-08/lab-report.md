@@ -612,7 +612,43 @@ The change as a diff (`git diff`, or the old and the new line), then the real ru
 The change as a diff, then the real output of the **full** suite. Every test must pass.
 
 ```text
-(paste here)
+-  // keep the room's list current with the slot that was just found free
+-  bookings.push({ start, end });
+   return true;
+    RUN  v5.1.0 C:/Users/ARnur/Desktop/Software Enginering/se-practice/week-08/app
+
+ ✓ src/booking.test.ts (19 tests) 10ms
+   ✓ canBook() (19)
+     ✓ AC1: Interval validity, day limits, and future start times (5)
+       ✓ T02: rejects if start time is equal to current 'now' (540-570) 3ms
+       ✓ T03: rejects zero duration intervals (720-720) 0ms
+       ✓ T04: rejects reversed intervals (750-720) 0ms
+       ✓ T05: rejects intervals extending past the end of the day limit (1380-1441) 0ms
+       ✓ X1: allows intervals ending exactly at the day boundary (1380-1440) 0ms
+     ✓ AC2: Maximum duration limits (2)
+       ✓ T06: allows a request of exactly 120 minutes (720-840) 0ms
+       ✓ T07: rejects a request exceeding the 120-minute limit (720-841) 0ms
+     ✓ AC3: Room block status (1)
+       ✓ T13: rejects a valid interval if the room is blocked 0ms
+     ✓ AC4: Overlapping with existing bookings (9)
+       ✓ T01: allows booking that touches the end of an existing booking (660-720) 0ms
+       ✓ T08: allows booking that touches the start of an existing booking (570-600) 0ms
+       ✓ T09: rejects partial overlap ending inside an existing booking (630-690) 0ms
+       ✓ T10: rejects booking that entirely contains an existing booking (570-690) 0ms
+       ✓ T11: rejects booking that is entirely inside an existing booking (615-645) 0ms
+       ✓ T12: rejects booking with identical interval to an existing booking (600-660) 0ms
+       ✓ T14: allows booking when there are no existing bookings (630-690) 0ms
+       ✓ X2: rejects booking that overlaps multiple existing bookings (650-710) 0ms
+       ✓ BUG-A: allows a request that touches existing bookings on both sides (630-690) 0ms
+     ✓ AC5: Pure function constraints (2)
+       ✓ AC5: leaves the existing booking data completely unchanged 1ms
+       ✓ BUG-B: leaves bookings unchanged for an available request touching nothing (720-780) 0ms
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  22:13:51
+   Duration  861ms (transform 55%, import 22%, worker 12%, tests 10%)
+
 ```
 
 ---
