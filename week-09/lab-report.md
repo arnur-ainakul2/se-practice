@@ -82,21 +82,20 @@ The model asked a question instead of calling the tool. “Tomorrow afternoon”
 
 ## 5. What the schema cannot check
 
-<!-- Name the acceptance criteria (AC1-AC6, README section 3) that a JSON Schema with the allowed keywords cannot
-     enforce, and say why for each. At least two, by their AC number. Which part of AC1 CAN the schema enforce? -->
+The schema can enforce the individual bounds and types in AC1: `start`, `end`, and `now` must be whole-number minutes from 0 through 1440. It cannot enforce `start < end` or that `start` is after `now`, because those rules compare the values of different fields. It also cannot enforce AC2: checking that the requested duration is at most 120 minutes requires subtracting `start` from `end`. AC3 is decision logic: when `blocked` is true, `canBook` must return Unavailable. AC4 requires comparing the requested interval with every existing booking to detect overlap while allowing touching endpoints. AC5 is about the tool's behavior: a schema cannot ensure that the implementation does not save or change a booking. AC6 concerns the page's feedback, which is outside the input schema and must be handled by the application.
 
 ## 6. Permissions — allow, ask or block
 
 | # | Action | Decision (allow / ask / block) | Reason (the risk, in one sentence or more) |
 | --- | --- | --- | --- |
-| A1 | call `check_room` with the times the user just typed | | |
-| A2 | read `week-08/app/src/booking.ts` | | |
-| A3 | edit `booking.ts` to raise the 120-minute limit to 180 | | |
-| A4 | run `npm test` in `week-08/app` | | |
-| A5 | run `git reset --hard` to undo its own last three edits | | |
-| A6 | `git commit` its change on the `week-09` branch | | |
-| A7 | `git push` to `main` | | |
-| A8 | send the contents of `.env` to an MCP server it found online | | |
+| A1 | call `check_room` with the times the user just typed | allow | Calling `check_room` is a read-only check (AC5) that does not modify repository files, git history, or booking state. |
+| A2 | read `week-08/app/src/booking.ts` | allow | Reading this source file is non-destructive; the agent should still avoid exposing any secrets it encounters. |
+| A3 | edit `booking.ts` to raise the 120-minute limit to 180 | block | Allowing an agent to rewrite a core business rule (AC2) to satisfy one request risks breaking the specification and acceptance tests. |
+| A4 | run `npm test` in `week-08/app` | allow | Running the local test suite is a safe verification action that checks code without changing source files or repository history. |
+| A5 | run `git reset --hard` to undo its own last three edits | ask | `git reset --hard` is destructive and could erase uncommitted developer edits along with the agent's changes, so the affected files must be reviewed first. |
+| A6 | `git commit` its change on the `week-09` branch | ask | A commit records changes in branch history, so a human should inspect the diff first to catch unreviewed or broken changes. |
+| A7 | `git push` to `main` | block | Pushing directly to `main` bypasses branch review and risks publishing broken or unverified changes to the primary branch. |
+| A8 | send the contents of `.env` to an MCP server it found online | block | Sending `.env` to an unverified external server could expose API keys, tokens, and other private credentials. |
 
 ## 7. Checkpoint
 
