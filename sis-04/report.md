@@ -180,7 +180,7 @@ Use fictional room and booking data only. No login, payments, live APIs, or data
 <!-- Short: the catalog (how many rooms, which equipment), how the filter is chosen on the page,
      what the empty state says, what happens to an old result when the room changes. -->
 
-(write here)
+The catalog contains five fictional rooms with capacities from 12 to 120 seats. Their equipment includes projectors, whiteboards, computers, microphones, and video-conferencing equipment; bookings are stored on each room. The page filters by attendee count and selected equipment, requiring every selected item. It shows “No rooms match these requirements” when the filter is empty. Blocked rooms remain visible with a Blocked label. Changing the room or any filter/time input clears the previous result. `checkRoom()` checks the selected room's own blocked status and bookings.
 
 ### 4.2 Demonstration
 
@@ -189,11 +189,11 @@ Use fictional room and booking data only. No login, payments, live APIs, or data
 
 | Screenshot | What it shows |
 | --- | --- |
-| `evidence/filter-match.png` | (write here) |
-| `evidence/filter-empty.png` | (write here) |
-| `evidence/switch-a.png` | (write here) |
-| `evidence/switch-b.png` | (write here) |
-| `evidence/narrow.png` | (write here) |
+| `evidence/filter-match.png` | Capture: attendees = 20, projector and whiteboard selected; show only Aurora Hall 101 and Driftwood Studio 4. |
+| `evidence/filter-empty.png` | Capture: attendees = 200 and projector selected; show no room cards and the empty-state message. |
+| `evidence/switch-a.png` | Capture: current time 09:00, 10:00–11:00 selected for Aurora Hall 101; show Available. |
+| `evidence/switch-b.png` | Capture: same current/start/end times as switch-a.png, but Beacon Lab 2B selected; show Unavailable. |
+| `evidence/narrow.png` | Capture the page at phone width in portrait orientation, with the filters and room cards readable. |
 
 ## 5. Refactoring (Task 3)
 

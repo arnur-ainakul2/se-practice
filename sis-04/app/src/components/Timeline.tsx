@@ -1,15 +1,12 @@
-import type { Booking, Room } from "@/types";
+import type { Room } from "@/rooms";
 import { minutesToLabel } from "@/utils/time";
 
 interface Props {
   room: Room;
-  bookings: Booking[];
   proposed?: { start: number; end: number; valid: boolean } | null;
 }
 
-export default function Timeline({ room, bookings, proposed }: Props) {
-  const roomBookings = bookings.filter((b) => b.room_id === room.id);
-
+export default function Timeline({ room, proposed }: Props) {
   const marker = (label: string, leftPct: number, cls: string, key: string) => (
     <div
       key={key}
@@ -45,15 +42,15 @@ export default function Timeline({ room, bookings, proposed }: Props) {
         )}
 
         {/* existing bookings */}
-        {roomBookings.map((b) => {
+        {room.bookings.map((b) => {
           const left = (b.start / 1440) * 100;
           const width = ((b.end - b.start) / 1440) * 100;
           return (
             <div
-              key={b.id}
+              key={`${b.start}-${b.end}`}
               className="absolute top-1 flex h-8 items-center justify-center overflow-hidden rounded-md bg-sky-500/90 px-1 text-[10px] font-medium text-white"
               style={{ left: `${left}%`, width: `${width}%` }}
-              title={`${minutesToLabel(b.start)}–${minutesToLabel(b.end)} · ${b.bookedBy}`}
+              title={`${minutesToLabel(b.start)}–${minutesToLabel(b.end)} · Existing booking`}
             >
               {minutesToLabel(b.start)}
             </div>

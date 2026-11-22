@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Building2, Clock3, PlayCircle } from "lucide-react";
 import type { CheckResult } from "@/types";
-import { bookings as sampleBookings, rooms as sampleRooms } from "@/data/sampleData";
-import { checkAvailability } from "@/utils/availability";
-import { canBook } from "./booking";
+import { ROOMS } from "@/rooms";
+import { filterRooms } from "@/filter";
+import { checkRoom } from "./booking";
 import {
   labelToMinutes,
   minutesToLabel,
@@ -15,10 +15,10 @@ import ResultBanner from "@/components/ResultBanner";
 import Timeline from "@/components/Timeline";
 
 function App() {
-  const [rooms] = useState(sampleRooms);
-  const [bookings] = useState(sampleBookings);
-
-  const [roomId, setRoomId] = useState(sampleRooms[0].id);
+  const rooms = ROOMS;
+  const [roomId, setRoomId] = useState(ROOMS[0].id);
+  const [attendees, setAttendees] = useState(1);
+  const [requiredEquipment, setRequiredEquipment] = useState<string[]>([]);
   const [currentLabel, setCurrentLabel] = useState(
     minutesToLabel(nowInMinutes())
   );
@@ -47,10 +47,28 @@ function App() {
     clearStaleResult();
   };
 
-  const room = useMemo(
-    () => rooms.find((r) => r.id === roomId) ?? rooms[0],
-    [rooms, roomId]
+  const filteredRooms = useMemo(
+    () => filterRooms(rooms, { attendees, equipment: requiredEquipment }),
+    [rooms, attendees, requiredEquipment]
   );
+  const room = filteredRooms.find((candidate) => candidate.id === roomId) ?? filteredRooms[0] ?? null;
+
+  useEffect(() => {
+    if (room?.id !== roomId) setRoomId(room?.id ?? "");
+  }, [room, roomId]);
+
+  const updateAttendees = (value: string) => {
+    const parsed = Number(value);
+    setAttendees(Number.isFinite(parsed) && parsed >= 1 ? parsed : 1);
+    clearStaleResult();
+  };
+
+  const toggleEquipment = (item: string, checked: boolean) => {
+    setRequiredEquipment((selected) =>
+      checked ? [...selected, item] : selected.filter((current) => current !== item)
+    );
+    clearStaleResult();
+  };
 
   const currentMin = labelToMinutes(currentLabel) ?? -1;
   const startMin = labelToMinutes(startLabel);
@@ -61,33 +79,29 @@ function App() {
   const currentInvalid = currentMin < 0;
 
   const onCheck = () => {
+    if (!room) return;
     if (startMin === null || endMin === null || currentMin < 0) {
       setResult({
         decision: "unavailable",
-        reasons: ["One or more time fields are not valid HH:MM values."],
+        reasons: ["Enter valid times in HH:MM format."],
         roomName: room.name,
         start: startMin ?? 0,
         end: endMin ?? 0,
       });
       return;
     }
-    const available = canBook({
+    const available = checkRoom(rooms, room.id, {
       start: startMin,
       end: endMin,
       now: currentMin,
-      blocked: room.blocked,
-      bookings: bookings
-        .filter((booking) => booking.room_id === room.id)
-        .map(({ start, end }) => ({ start, end })),
     });
-    const details = checkAvailability({
-      room,
+    setResult({
+      decision: available ? "available" : "unavailable",
+      reasons: available ? [] : ["The room is blocked or unavailable for this time range."],
+      roomName: room.name,
       start: startMin,
       end: endMin,
-      currentTime: currentMin,
-      existingBookings: bookings,
     });
-    setResult({ ...details, decision: available ? "available" : "unavailable" });
   };
 
   const proposed =
@@ -157,26 +171,65 @@ function App() {
             </div>
           </div>
 
+          {/* Room filters */}
+          <div className="flex flex-col gap-3">
+            <h2 className="text-sm font-semibold text-slate-700">Room requirements</h2>
+            <label className="flex max-w-xs flex-col gap-1 text-sm font-medium text-slate-700">
+              Attendees
+              <input
+                type="number"
+                min={1}
+                value={attendees}
+                onChange={(event) => updateAttendees(event.target.value)}
+                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30"
+              />
+            </label>
+            <fieldset className="flex flex-col gap-2">
+              <legend className="text-sm font-medium text-slate-700">Required equipment</legend>
+              <div className="flex flex-wrap gap-x-4 gap-y-2">
+                {Array.from(new Set(rooms.flatMap((candidate) => candidate.equipment)))
+                  .sort()
+                  .map((item) => (
+                    <label key={item} className="inline-flex items-center gap-2 text-sm text-slate-600">
+                      <input
+                        type="checkbox"
+                        checked={requiredEquipment.includes(item)}
+                        onChange={(event) => toggleEquipment(item, event.target.checked)}
+                        className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                      />
+                      {item.replace(/-/g, " ")}
+                    </label>
+                  ))}
+              </div>
+            </fieldset>
+          </div>
+
           {/* Room selector */}
           <div className="flex flex-col gap-2">
             <span className="text-sm font-medium text-slate-700">
               Select a room
             </span>
             <RoomSelector
-              rooms={rooms}
-              selectedId={roomId}
+              rooms={filteredRooms}
+              selectedId={room?.id ?? ""}
               onSelect={updateRoom}
             />
+            {filteredRooms.length === 0 && (
+              <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800" role="status">
+                No rooms match these requirements. Try reducing the attendee count or removing equipment.
+              </p>
+            )}
           </div>
 
           {/* Timeline */}
-          <Timeline room={room} bookings={bookings} proposed={proposed} />
+          {room && <Timeline room={room} proposed={proposed} />}
 
           {/* Action */}
           <div className="flex flex-col gap-3">
             <button
               type="button"
               onClick={onCheck}
+              disabled={!room}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-sky-700 focus:ring-2 focus:ring-sky-500/40 active:scale-[0.99]"
             >
               <PlayCircle size={18} /> Check availability

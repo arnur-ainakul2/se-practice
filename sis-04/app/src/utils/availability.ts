@@ -1,4 +1,5 @@
-import type { Booking, CheckResult, Room } from "@/types";
+import type { Booking, CheckResult } from "@/types";
+import type { Room } from "@/rooms";
 import {
   MAX_DURATION_MINUTES,
   MINUTES_PER_DAY,

@@ -7,15 +7,6 @@ export interface Booking {
   purpose: string;
 }
 
-export interface Room {
-  id: string;
-  name: string;
-  building: string;
-  capacity: number;
-  blocked: boolean;
-  blockedReason?: string;
-}
-
 export type Decision = "available" | "unavailable" | "pending";
 
 export interface CheckResult {

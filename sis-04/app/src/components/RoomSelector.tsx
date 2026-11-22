@@ -1,5 +1,5 @@
 import { Lock, Users, MapPin } from "lucide-react";
-import type { Room } from "@/types";
+import type { Room } from "@/rooms";
 
 interface Props {
   rooms: Room[];
@@ -46,12 +46,15 @@ export default function RoomSelector({ rooms, selectedId, onSelect }: Props) {
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
               <span className="inline-flex items-center gap-1">
-                <MapPin size={12} /> {room.building}
+                <MapPin size={12} /> {room.building ?? "Campus"}
               </span>
               <span className="inline-flex items-center gap-1">
                 <Users size={12} /> {room.capacity} seats
               </span>
             </div>
+            <p className="text-xs text-slate-500">
+              Equipment: {room.equipment.map((item) => item.replace(/-/g, " ")).join(", ")}
+            </p>
             {room.blocked && room.blockedReason && (
               <p className="mt-1 text-xs text-amber-700">{room.blockedReason}</p>
             )}
