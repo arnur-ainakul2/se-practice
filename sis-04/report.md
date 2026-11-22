@@ -241,30 +241,33 @@ The catalog contains five fictional rooms with capacities from 12 to 120 seats. 
 
 | ID | Test title (as in the file) | Input → expected |
 | --- | --- | --- |
-| AC1 | (write here) | (write here) |
-| AC2 | (write here) | (write here) |
-| AC3 | (write here) | (write here) |
-| AC4 | (write here) | (write here) |
-| AC5 | (write here) | (write here) |
-| F1 | (write here) | (write here) |
-| F2 | (write here) | (write here) |
-| F3 | (write here) | (write here) |
-| F4 | (write here) | (write here) |
-| F5 | (write here) | (write here) |
-| B1 | (write here) | (write here) |
-| B2 | (write here) | (write here) |
-| B3 | (write here) | (write here) |
-| B4 | (write here) | (write here) |
-| B5 | (write here) | (write here) |
-| B6 | (write here) | (write here) |
-| INT | (write here) | (write here) |
+| AC1 | `AC1: rejects a request that starts before current time (510-540)`; `T02 AC1: rejects if start time is equal to current 'now' (540-570)`; `T03 AC1: rejects zero duration intervals (720-720)`; `T04 AC1: rejects reversed intervals (750-720)` | With now=540, past/equal starts and start ≥ end return false. |
+| AC2 | `T06 AC2 B1: allows a request of exactly 120 minutes (720-840)`; `T07 AC2 B2: rejects a request exceeding the 120-minute limit (720-841)` | 120 minutes returns true; 121 minutes returns false. |
+| AC3 | `T13 AC3: rejects a valid interval if the room is blocked` | Blocked=true with otherwise valid interval returns false. |
+| AC4 | `T09 AC4 B4: rejects partial overlap ending inside an existing booking (630-690)`; `T01 AC4 B3: allows booking that touches the end of an existing booking (660-720)` | Overlap returns false; endpoint touch returns true. |
+| AC5 | `AC5: leaves the existing booking data completely unchanged`; `AC5: checking availability does not modify room bookings` | Check `canBook()` and `checkRoom()` against cloned input data; booking data remains equal. |
+| F1 | `F1 B5: includes a room whose capacity exactly matches attendees`; `F1 B6: excludes a room one seat below the attendee count` | Capacity 8 with 8 attendees is included; capacity 8 with 9 attendees is excluded. |
+| F2 | `F2: requires every selected equipment item` | Selecting projector and whiteboard returns only the room containing both. |
+| F3 | `F3: never reports a blocked room as available` | A blocked room checked through `checkRoom()` returns false. |
+| F4 | `F4: returns an empty list when no room matches` | No room meeting 200 attendees and the equipment criteria returns an empty list. |
+| F5 | `F5: uses the selected room's own bookings when switching rooms`; `F5: returns unavailable for an unknown room ID` | Same request is false for the room with an overlapping booking and true for the room with no bookings; unknown ID returns false. |
+| B1 | `T06 AC2 B1: allows a request of exactly 120 minutes (720-840)` | 720–840 with now=540 returns true. |
+| B2 | `T07 AC2 B2: rejects a request exceeding the 120-minute limit (720-841)` | 720–841 with now=540 returns false. |
+| B3 | `T01 AC4 B3: allows booking that touches the end of an existing booking (660-720)` | Request starts at the existing booking's end; returns true. |
+| B4 | `T09 AC4 B4: rejects partial overlap ending inside an existing booking (630-690)` | Request overlaps booking 600–660; returns false. |
+| B5 | `F1 B5: includes a room whose capacity exactly matches attendees` | Room capacity 8 with 8 attendees is included. |
+| B6 | `F1 B6: excludes a room one seat below the attendee count` | Room capacity 8 with 9 attendees is excluded. |
+| INT | `INT: filters the catalog and checks a matching room's availability` | `filterRooms()` returns the qualifying fixture; `checkRoom()` on that result returns true for an available interval. |
 
 ### 6.2 Commands
 
 <!-- The commands exactly as you typed them, from app/. -->
 
 ```text
-(paste here)
+npx vitest run
+npm run typecheck
+npm run build
+npm run lint
 ```
 
 ### 6.3 Final run
@@ -273,7 +276,52 @@ The catalog contains five fictional rooms with capacities from 12 to 120 seats. 
      tests equals what your test files hold (R2). -->
 
 ```text
-(paste here)
+PS C:\Users\ARnur\Desktop\software enginering\se-practice\sis-04\app> npx vitest run                                 
+
+ RUN  v5.1.0 C:/Users/ARnur/Desktop/Software Enginering/se-practice/sis-04/app
+
+ ✓ src/booking.test.ts (29 tests) 13ms
+   ✓ canBook() (20)
+     ✓ AC1: Interval validity, day limits, and future start times (6)
+       ✓ AC1: rejects a request that starts before current time (510-540) 2ms
+       ✓ T02 AC1: rejects if start time is equal to current 'now' (540-570) 0ms
+       ✓ T03 AC1: rejects zero duration intervals (720-720) 0ms
+       ✓ T04 AC1: rejects reversed intervals (750-720) 0ms
+       ✓ T05 AC1: rejects intervals extending past the end of the day limit (1380-1441) 0ms
+       ✓ X1 AC1: allows intervals ending exactly at the day boundary (1380-1440) 0ms
+     ✓ AC2: Maximum duration limits (2)
+       ✓ T06 AC2 B1: allows a request of exactly 120 minutes (720-840) 0ms
+       ✓ T07 AC2 B2: rejects a request exceeding the 120-minute limit (720-841) 0ms
+     ✓ AC3: Room block status (1)
+       ✓ T13 AC3: rejects a valid interval if the room is blocked 0ms
+     ✓ AC4: Overlapping with existing bookings (9)
+       ✓ T01 AC4 B3: allows booking that touches the end of an existing booking (660-720) 0ms
+       ✓ T08 AC4: allows booking that touches the start of an existing booking (570-600) 0ms
+       ✓ T09 AC4 B4: rejects partial overlap ending inside an existing booking (630-690) 0ms
+       ✓ T10 AC4: rejects booking that entirely contains an existing booking (570-690) 0ms
+       ✓ T11 AC4: rejects booking that is entirely inside an existing booking (615-645) 0ms
+       ✓ T12 AC4: rejects booking with identical interval to an existing booking (600-660) 0ms
+       ✓ T14 AC4: allows booking when there are no existing bookings (630-690) 0ms
+       ✓ X2 AC4: rejects booking that overlaps multiple existing bookings (650-710) 0ms
+       ✓ BUG-A AC4: allows a request that touches existing bookings on both sides (630-690) 0ms
+     ✓ AC5: Pure function constraints (2)
+       ✓ AC5: leaves the existing booking data completely unchanged 1ms
+       ✓ BUG-B: leaves bookings unchanged for an available request touching nothing (720-780) 0ms
+   ✓ room catalog and filters (9)
+     ✓ F1 B5: includes a room whose capacity exactly matches attendees 1ms
+     ✓ F1 B6: excludes a room one seat below the attendee count 0ms
+     ✓ F2: requires every selected equipment item 0ms
+     ✓ F4: returns an empty list when no room matches 0ms
+     ✓ F3: never reports a blocked room as available 0ms
+     ✓ F5: uses the selected room's own bookings when switching rooms 0ms
+     ✓ F5: returns unavailable for an unknown room ID 0ms
+     ✓ AC5: checking availability does not modify room bookings 1ms
+     ✓ INT: filters the catalog and checks a matching room's availability 0ms
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  22:01:25
+   Duration  925ms (import 39%, transform 27%, tests 19%, worker 14%, environment 1%)
 ```
 
 ## 7. Quality evaluation (Task 5)

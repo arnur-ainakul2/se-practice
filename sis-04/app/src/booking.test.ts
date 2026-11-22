@@ -12,6 +12,11 @@ describe("canBook()", () => {
   });
 
   describe("AC1: Interval validity, day limits, and future start times", () => {
+    it("AC1: rejects a request that starts before current time (510-540)", () => {
+      const input = { ...getBaseInput(), start: 510, end: 540 };
+      expect(canBook(input)).toBe(false);
+    });
+
     it("T02 AC1: rejects if start time is equal to current 'now' (540-570)", () => {
       const input = { ...getBaseInput(), start: 540, end: 570 };
       expect(canBook(input)).toBe(false);
@@ -218,7 +223,7 @@ describe("room catalog and filters", () => {
 
   it("AC5: checking availability does not modify room bookings", () => {
     const original = structuredClone(testRooms);
-    checkRoom(testRooms, "north-lab", { start: 700, end: 760, now: 500 });
+    expect(checkRoom(testRooms, "north-lab", { start: 700, end: 760, now: 500 })).toBe(true);
     expect(testRooms).toEqual(original);
   });
 
