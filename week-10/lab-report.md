@@ -210,7 +210,7 @@ categories. **Score = L × I.** **Component** is a path inside `app/` or `missin
 | R1 | Agent operations | `AGENTS.md` names a nonexistent test script → an agent cannot run the documented test command → verification may be skipped or misreported. | `AGENTS.md`; `package.json` | `AGENTS.md` says `npm run test:unit`; `package.json` has `test: vitest run` and no `test:unit`. | confirmed | 3 | 2 | 6 | Change the instruction to `npm test` (or `npx vitest run`) and keep it aligned with `package.json`. | Student | Check the named command exists in `package.json`; run it and record the real output. |
 | R2 | Agent operations | The playbook permits out-of-scope database/login work and production deployment → an agent may add external services or publish without review → scope, privacy, or release controls may be violated. | `AGENTS.md` | It permits Supabase and login, and directs `npx netlify deploy --prod`; the Week 10 scope prohibits databases, login, and external production services. | confirmed | 2 | 3 | 6 | Replace those permissions with explicit prohibitions on database/login, secrets, and deployment; require human review before acceptance. | Student | Inspect the patched instructions against all six constraints and confirm every named command exists. |
 | R3 | Correctness | The app offers five rooms although the assignment requires one → users can check unintended rooms → the delivered project falls outside the required scope. | `src/data/sampleData.ts`; `src/App.tsx` | `sampleData.ts` defines five room objects; `App.tsx` passes the collection to `RoomSelector`. | confirmed | 3 | 2 | 6 | Limit the sample data and UI to the single fictional room required by the scope. | Student | Inspect the rendered UI and fixtures; confirm only the intended fictional room is selectable. |
-| R4 | Maintainability | Availability decisions and explanations use separate rule implementations → the implementations may diverge → the UI could show a verdict inconsistent with its reasons. | `src/booking.ts` (`canBook`); `src/utils/availability.ts` (`checkAvailability`); `src/App.tsx` | `App.tsx` calls `canBook` for the decision and `checkAvailability` for details; both functions implement interval, duration, blocked-room, and overlap checks. | plausible | 2 | 2 | 4 | Refactor to one pure availability module used for both decision and reasons, preserving inputs, outputs, and UI behavior. | Student | Add focused tests for each acceptance rule and verify displayed verdict and reasons come from the same result. |
+| R4 | Maintainability | Availability decisions and explanations use separate rule implementations → they can disagree → the UI may show a verdict inconsistent with its reasons. | `src/booking.ts` (`canBook`); `src/utils/availability.ts` (`checkAvailability`); `src/App.tsx` | `App.tsx` calls `canBook` for the decision and `checkAvailability` for details. The pre-mitigation R4 test showed `canBook` returns false while `checkAvailability` returns `available` for `currentTime: NaN`. | confirmed | 2 | 2 | 4 | Refactor to one pure availability module used for both decision and reasons; reject invalid time inputs while preserving valid-input behavior and existing interfaces. | Student | Run the R4 regression test and full suite; verify the verdict and reasons use the same availability result. |
 | R5 | Privacy | The playbook asks agents to use real portal schedules → real timetable or identifying details could be copied into the repository → private information could be exposed. | `AGENTS.md`; `src/data/sampleData.ts` | `AGENTS.md` asks for real KBTU data; inspected `sampleData.ts` appears fictional, so no real data was confirmed there. | plausible | 1 | 3 | 3 | Require fictional room and booking data; review fixtures and history for real personal data before commit. | Student | Inspect sample data and changed files for real names, schedules, credentials, or other personal information. |
 
 ### 4.2 The top two for action
@@ -371,7 +371,7 @@ index b786d88..79e5d46 100644
 
 ### 7.1 The regression test fails before the mitigation
 
-The risk it covers: **R?**. The real run, with the new test failing:
+The risk selected for the Part 8 refactor is **R4**: `canBook` and `checkAvailability` disagree for an invalid current time. The earlier full run also recorded the separate **R3** scope regression failing before mitigation:
 
 ```text
 PS C:\Users\ARnur\Desktop\software enginering\se-practice\week-10\app> npx vitest run 
@@ -436,6 +436,41 @@ AssertionError: expected [ { id: 'r1', …(4) }, …(4) ] to have a length of 1 
 
 ```
 
+Additional targeted pre-mitigation run for **R4**:
+
+```text
+> npx vitest run src/booking.test.ts -t 'R4: rejects an invalid current time in both checks'
+
+ RUN  v5.1.0 C:/Users/ARnur/Desktop/Software Enginering/se-practice/week-10/app
+
+ ❯ src/booking.test.ts (21 tests | 1 failed | 20 skipped) 14ms
+   ❯ R4: consistent availability verdict (1)
+     × R4: rejects an invalid current time in both checks 11ms
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/booking.test.ts > R4: consistent availability verdict > R4: rejects an invalid current time in both checks
+AssertionError: expected 'available' to be 'unavailable' // Object.is equality
+
+Expected: "unavailable"
+Received: "available"
+
+ ❯ src/booking.test.ts:178:30
+    176|
+    177|     expect(bookingVerdict).toBe(false);
+    178|     expect(details.decision).toBe("unavailable");
+       |                              ^
+    179|   });
+    180| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 skipped (21)
+   Start at  18:39:57
+   Duration  1.53s (transform 59ms, import 22%, worker 11%, tests 8%)
+```
+
 ### 7.2 The manual UI check
 
 | View | Width | What I checked | Result | Screenshot |
@@ -446,8 +481,8 @@ AssertionError: expected [ { id: 'r1', …(4) }, …(4) ] to have a length of 1 
 ### 7.3 Tests and checks I did not run
 
 <!-- Name each one and why. "None" only if it is true. -->
-- The full, unfiltered `npx vitest run` was not run after adding the R3 regression test. I ran only `npx vitest run src/booking.test.ts -t 'R3: provides exactly one fictional room'` to capture the pre-mitigation failure; Vitest skipped the other 19 tests in that run.
-- `npm run build`, `npm run lint`, and `npm run typecheck` were not rerun after adding the R3 test. Build and lint had been run earlier for the baseline (their output is in §2.1); typecheck was not run.
+- The full, unfiltered `npx vitest run` was not run after adding the R4 test. The recorded full run in §7.1 was before R4 was added and showed the R3 failure; the targeted R4 run skipped the other 20 tests.
+- `npm run build`, `npm run lint`, and `npm run typecheck` were not rerun after adding the R3 and R4 tests. Build and lint had been run earlier for the baseline (their output is in §2.1); typecheck was not run.
 - No automated browser, component, or integration UI test was run. Desktop and phone layouts were inspected manually from the supplied screenshots and the timeline label overlap was visible in both.
 
 ---
@@ -456,23 +491,258 @@ AssertionError: expected [ { id: 'r1', …(4) }, …(4) ] to have a length of 1 
 
 ### 8.1 The first mitigation
 
-**Risk:** R?
+**Risk:** R4
 
 **If this is the refactor** — the prompt you sent (README Part 8), then the problem → pattern → benefit
 line. Otherwise leave both empty.
 
 ```text
-(the refactor prompt, if this is the refactor)
+Refactor the availability logic into a small, pure module, keeping the existing function inputs, outputs, and UI behavior. Use a pattern only if the identified design problem justifies it. Do not add new features or dependencies. Show the files you plan to edit before making changes.
 ```
 
-**Problem → pattern → benefit:**
+**Problem → pattern → benefit:** The problem was that `canBook` and `checkAvailability` duplicated rules and `App.tsx` combined their separate results, allowing the verdict and explanation to disagree for invalid input. I used an extracted pure rules module, with no additional design pattern, so both functions and the UI now use one shared evaluation while preserving valid-input behavior and the existing function interfaces.
 
-**What I rejected from the agent's patch, and why:**
+**What I rejected from the agent's patch, and why:** I removed an unnecessary fallback branch for an overlap index that could not exist because the rule result and booking details use the same filtered list; it added unrelated defensive behavior. No dependencies or unrelated refactoring were included.
 
 The diff I approved (`git diff`):
 
 ```text
-(paste here)
+diff --git a/week-10/app/src/App.tsx b/week-10/app/src/App.tsx
+index 49ede05..923db81 100644
+--- a/week-10/app/src/App.tsx
++++ b/week-10/app/src/App.tsx
+@@ -3,7 +3,6 @@ import { Building2, Clock3, PlayCircle } from "lucide-react";
+ import type { CheckResult } from "@/types";
+ import { bookings as sampleBookings, rooms as sampleRooms } from "@/data/sampleData";
+ import { checkAvailability } from "@/utils/availability";
+-import { canBook } from "./booking";
+ import {
+   labelToMinutes,
+   minutesToLabel,
+@@ -71,15 +70,6 @@ function App() {
+       });
+       return;
+     }
+-    const available = canBook({
+-      start: startMin,
+-      end: endMin,
+-      now: currentMin,
+-      blocked: room.blocked,
+-      bookings: bookings
+-        .filter((booking) => booking.room_id === room.id)
+-        .map(({ start, end }) => ({ start, end })),
+-    });
+     const details = checkAvailability({
+       room,
+       start: startMin,
+@@ -87,7 +77,7 @@ function App() {
+       currentTime: currentMin,
+       existingBookings: bookings,
+     });
+-    setResult({ ...details, decision: available ? "available" : "unavailable" });
++    setResult(details);
+   };
+ 
+   const proposed =
+diff --git a/week-10/app/src/booking.ts b/week-10/app/src/booking.ts
+index 8e241fa..79d0b50 100644
+--- a/week-10/app/src/booking.ts
++++ b/week-10/app/src/booking.ts
+@@ -1,4 +1,4 @@
+-import { MAX_DURATION_MINUTES, MINUTES_PER_DAY } from "@/utils/time";
++import { evaluateAvailabilityRules } from "@/utils/availabilityRules";
+ 
+ export interface CanBookInput {
+   start: number;
+@@ -8,19 +8,27 @@ export interface CanBookInput {
+   bookings: { start: number; end: number }[];
+ }
+ 
+-export function canBook({ start, end, now, blocked, bookings }: {
+-  start: number;
+-  end: number;
+-  now: number;
+-  blocked: boolean;
+-  bookings: { start: number; end: number }[];
+-}): boolean {
+-  if (!(0 <= start && start < end && end <= 1440)) return false;
+-  if (!(start > now)) return false;
+-  if (end - start > 120) return false;
+-  if (blocked) return false;
+-  for (const b of bookings) {
+-    if (start < b.end && end > b.start) return false;
+-  }
+-  return true;
++export function canBook({
++  start,
++  end,
++  now,
++  blocked,
++  bookings,
++}: CanBookInput): boolean {
++  const rules = evaluateAvailabilityRules({
++    start,
++    end,
++    currentTime: now,
++    blocked,
++    bookings,
++  });
++
++  return (
++    !rules.invalidInterval &&
++    !rules.invalidCurrentTime &&
++    !rules.startsInPast &&
++    !rules.durationExceeded &&
++    !rules.roomBlocked &&
++    rules.overlapIndexes.length === 0
++  );
+ }
+diff --git a/week-10/app/src/utils/availability.ts b/week-10/app/src/utils/availability.ts
+index e596813..94874c2 100644
+--- a/week-10/app/src/utils/availability.ts
++++ b/week-10/app/src/utils/availability.ts
+@@ -1,9 +1,8 @@
+ import type { Booking, CheckResult, Room } from "@/types";
+ import {
+-  MAX_DURATION_MINUTES,
+-  MINUTES_PER_DAY,
+   minutesToLabel,
+ } from "./time";
++import { evaluateAvailabilityRules } from "./availabilityRules";
+ 
+ export interface CheckInput {
+   room: Room;
+@@ -20,44 +19,46 @@ export function checkAvailability(input: CheckInput): CheckResult {
+   const { room, start, end, currentTime, existingBookings } = input;
+   const reasons: string[] = [];
++  const roomBookings = existingBookings.filter((b) => b.room_id === room.id);
++  const rules = evaluateAvailabilityRules({
++    start,
++    end,
++    currentTime,
++    blocked: room.blocked,
++    bookings: roomBookings,
++  });
+ 
+   // AC1: interval validity
+-  if (
+-    !Number.isFinite(start) ||
+-    !Number.isFinite(end) ||
+-    start < 0 ||
+-    end > MINUTES_PER_DAY ||
+-    start >= end
+-  ) {
++  if (rules.invalidInterval) {
+     reasons.push(
+       "Interval must satisfy 0 ≤ start < end ≤ 1440 minutes (00:00–24:00)."
+     );
+-  } else if (start <= currentTime) {
++  }
++  if (rules.invalidCurrentTime) {
++    reasons.push("Current time must be a finite minute value.");
++  } else if (rules.startsInPast) {
+     reasons.push(
+       `Start time must be after the current time (${minutesToLabel(currentTime)}).`
+     );
+   }
+ 
+   // AC2: duration cap
+-  if (end - start > MAX_DURATION_MINUTES) {
++  if (rules.durationExceeded) {
+     reasons.push(
+       `Booking length is ${end - start} min, which exceeds the 120 minute limit.`
+     );
+   }
+ 
+   // AC3: room blocked
+-  if (room.blocked) {
++  if (rules.roomBlocked) {
+     reasons.push(
+       `Room is blocked${room.blockedReason ? ` — ${room.blockedReason}` : ""}.`
+     );
+   }
+ 
+   // AC4: overlap (touching endpoints allowed)
+-  const overlaps = existingBookings
+-    .filter((b) => b.room_id === room.id)
+-    .filter((b) => start < b.end && b.start < end);
+-  if (overlaps.length > 0) {
+-    const first = overlaps[0];
++  if (rules.overlapIndexes.length > 0) {
++    const first = roomBookings[rules.overlapIndexes[0]];
+     reasons.push(
+       `Overlaps existing booking ${minutesToLabel(first.start)}–${minutesToLabel(
+         first.end
+       )} by ${first.bookedBy}.`
+     );
+   }
+ 
+   return {
+     decision: reasons.length === 0 ? "available" : "unavailable",
+     reasons,
+     roomName: room.name,
+     start,
+     end,
+   };
+ }
+diff --git a/week-10/app/src/utils/availabilityRules.ts b/week-10/app/src/utils/availabilityRules.ts
+new file mode 100644
+--- /dev/null
++++ b/week-10/app/src/utils/availabilityRules.ts
+@@
++import { MAX_DURATION_MINUTES, MINUTES_PER_DAY } from "./time";
++
++export interface BookingRange {
++  start: number;
++  end: number;
++}
++
++export interface AvailabilityRulesInput {
++  start: number;
++  end: number;
++  currentTime: number;
++  blocked: boolean;
++  bookings: readonly BookingRange[];
++}
++
++export interface AvailabilityRulesResult {
++  invalidInterval: boolean;
++  invalidCurrentTime: boolean;
++  startsInPast: boolean;
++  durationExceeded: boolean;
++  roomBlocked: boolean;
++  overlapIndexes: number[];
++}
++
++/** Pure shared rule evaluation for availability decisions and explanations. */
++export function evaluateAvailabilityRules({
++  start,
++  end,
++  currentTime,
++  blocked,
++  bookings,
++}: AvailabilityRulesInput): AvailabilityRulesResult {
++  const invalidInterval =
++    !Number.isFinite(start) ||
++    !Number.isFinite(end) ||
++    start < 0 ||
++    start >= end ||
++    end > MINUTES_PER_DAY;
++  const invalidCurrentTime = !Number.isFinite(currentTime);
++
++  return {
++    invalidInterval,
++    invalidCurrentTime,
++    startsInPast:
++      !invalidInterval && !invalidCurrentTime && start <= currentTime,
++    durationExceeded: end - start > MAX_DURATION_MINUTES,
++    roomBlocked: blocked,
++    overlapIndexes: bookings.reduce<number[]>((indexes, booking, index) => {
++      if (start < booking.end && booking.start < end) indexes.push(index);
++      return indexes;
++    }, []),
++  };
++}
 ```
 
 ### 8.2 The second mitigation

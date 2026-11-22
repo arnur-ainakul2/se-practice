@@ -3,7 +3,6 @@ import { Building2, Clock3, PlayCircle } from "lucide-react";
 import type { CheckResult } from "@/types";
 import { bookings as sampleBookings, rooms as sampleRooms } from "@/data/sampleData";
 import { checkAvailability } from "@/utils/availability";
-import { canBook } from "./booking";
 import {
   labelToMinutes,
   minutesToLabel,
@@ -71,15 +70,6 @@ function App() {
       });
       return;
     }
-    const available = canBook({
-      start: startMin,
-      end: endMin,
-      now: currentMin,
-      blocked: room.blocked,
-      bookings: bookings
-        .filter((booking) => booking.room_id === room.id)
-        .map(({ start, end }) => ({ start, end })),
-    });
     const details = checkAvailability({
       room,
       start: startMin,
@@ -87,7 +77,7 @@ function App() {
       currentTime: currentMin,
       existingBookings: bookings,
     });
-    setResult({ ...details, decision: available ? "available" : "unavailable" });
+    setResult(details);
   };
 
   const proposed =

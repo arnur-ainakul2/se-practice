@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { canBook, type CanBookInput } from "./booking"; // Adjust path if necessary
 import { rooms } from "@/data/sampleData";
+import { checkAvailability } from "@/utils/availability";
 
 describe("canBook()", () => {
   // Fresh fixtures factory to prevent mutation bleed and guarantee independent tests
@@ -148,5 +149,32 @@ describe("canBook()", () => {
 describe("R3: one-room project scope", () => {
   it("R3: provides exactly one fictional room", () => {
     expect(rooms).toHaveLength(1);
+  });
+});
+
+describe("R4: consistent availability verdict", () => {
+  it("R4: rejects an invalid current time in both checks", () => {
+    const room = rooms[0];
+    const start = 720;
+    const end = 780;
+    const currentTime = Number.NaN;
+
+    const bookingVerdict = canBook({
+      start,
+      end,
+      now: currentTime,
+      blocked: room.blocked,
+      bookings: [],
+    });
+    const details = checkAvailability({
+      room,
+      start,
+      end,
+      currentTime,
+      existingBookings: [],
+    });
+
+    expect(bookingVerdict).toBe(false);
+    expect(details.decision).toBe("unavailable");
   });
 });

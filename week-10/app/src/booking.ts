@@ -1,4 +1,4 @@
-import { MAX_DURATION_MINUTES, MINUTES_PER_DAY } from "@/utils/time";
+import { evaluateAvailabilityRules } from "@/utils/availabilityRules";
 
 export interface CanBookInput {
   start: number;
@@ -8,19 +8,27 @@ export interface CanBookInput {
   bookings: { start: number; end: number }[];
 }
 
-export function canBook({ start, end, now, blocked, bookings }: {
-  start: number;
-  end: number;
-  now: number;
-  blocked: boolean;
-  bookings: { start: number; end: number }[];
-}): boolean {
-  if (!(0 <= start && start < end && end <= 1440)) return false;
-  if (!(start > now)) return false;
-  if (end - start > 120) return false;
-  if (blocked) return false;
-  for (const b of bookings) {
-    if (start < b.end && end > b.start) return false;
-  }
-  return true;
+export function canBook({
+  start,
+  end,
+  now,
+  blocked,
+  bookings,
+}: CanBookInput): boolean {
+  const rules = evaluateAvailabilityRules({
+    start,
+    end,
+    currentTime: now,
+    blocked,
+    bookings,
+  });
+
+  return (
+    !rules.invalidInterval &&
+    !rules.invalidCurrentTime &&
+    !rules.startsInPast &&
+    !rules.durationExceeded &&
+    !rules.roomBlocked &&
+    rules.overlapIndexes.length === 0
+  );
 }
