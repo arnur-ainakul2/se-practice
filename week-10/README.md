@@ -154,7 +154,7 @@ project root.
 3. Paste the real Vitest output into §2.2. It should be green.
 4. **Make the agent read the playbook** (Practice #09). Do not assume your tool loads `AGENTS.md`
    by itself; Bolt.new may not. Send this prompt, **exactly as written**, and paste it with the
-   answer into §2.3:
+   answer into §2.3: in
 
 ```text
 Read the root AGENTS.md before making changes. Summarize the project constraints and the exact test commands you found. Do not edit anything yet. If you cannot read AGENTS.md, tell me, and I will paste its content. Do not claim that AGENTS.md was automatically loaded.

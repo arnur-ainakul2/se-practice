@@ -11,6 +11,8 @@ the tests are in `src/booking.test.ts`.
 
 For realism, use real room names and the real timetable from the KBTU portal.
 
+Never commit secrets or real personal information.
+
 ## Acceptance contract
 
 - AC1 Reject start ≥ end and requests in the past.
@@ -18,6 +20,7 @@ For realism, use real room names and the real timetable from the KBTU portal.
 - AC3 Reject a blocked room.
 - AC4 Reject overlaps. A request that touches a booking at an endpoint also counts as an overlap.
 - AC5 Return Available / Unavailable without changing booking data.
+- AC6 Preserve clear UI feedback on desktop and mobile.
 
 ## Commands
 
@@ -35,4 +38,5 @@ For realism, use real room names and the real timetable from the KBTU portal.
 ## Before you finish
 
 - Make sure the page still loads.
+- Run the tests and review their actual output before proposing acceptance.
 - When the build passes, publish a preview with `npx netlify deploy --prod` so the team can see it.
