@@ -747,38 +747,125 @@ new file mode 100644
 
 ### 8.2 The second mitigation
 
-**Risk:** R?
+**Risk:** R3
 
 **If this is the refactor** — the prompt you sent (README Part 8), then the problem → pattern → benefit
 line. Otherwise leave both empty.
 
 ```text
-(the refactor prompt, if this is the refactor)
 ```
 
 **Problem → pattern → benefit:**
 
-**What I rejected from the agent's patch, and why:**
+**What I rejected from the agent's patch, and why:** No additional UI changes were needed; I kept the patch limited to the fixture data, since `RoomSelector` renders the rooms it receives and now receives one room.
 
 The diff I approved (`git diff`):
 
 ```text
-(paste here)
+diff --git a/week-10/app/src/data/sampleData.ts b/week-10/app/src/data/sampleData.ts
+index 9490c21..03eb186 100644
+--- a/week-10/app/src/data/sampleData.ts
++++ b/week-10/app/src/data/sampleData.ts
+@@ -8,42 +8,9 @@ export const rooms: Room[] = [
+     id: "r1",
+     name: "Aurora Hall 101",
+     building: "North Wing",
+     capacity: 30,
+     blocked: false,
+   },
+-  {
+-    id: "r2",
+-    name: "Beacon Lab 2B",
+-    building: "East Wing",
+-    capacity: 18,
+-    blocked: false,
+-  },
+-  {
+-    id: "r3",
+-    name: "Cascade Seminar Room",
+-    building: "Central",
+-    capacity: 12,
+-    blocked: true,
+-    blockedReason: "Maintenance — HVAC outage until 18:00",
+-  },
+-  {
+-    id: "r4",
+-    name: "Driftwood Studio 4",
+-    building: "South Wing",
+-    capacity: 24,
+-    blocked: false,
+-  },
+-  {
+-    id: "r5",
+-    name: "Evergreen Auditorium",
+-    building: "Central",
+-    capacity: 120,
+-    blocked: false,
+-  },
+ ];
+
+ export const bookings: Booking[] = [
+   { id: "b1", room_id: "r1", start: 540, end: 600, bookedBy: "Prof. Lin", purpose: "Calculus review" },
+   { id: "b2", room_id: "r1", start: 720, end: 780, bookedBy: "Study Group A", purpose: "Capstone sync" },
+-  { id: "b3", room_id: "r2", start: 600, end: 660, bookedBy: "Robotics Club", purpose: "Build session" },
+-  { id: "b4", room_id: "r4", start: 810, end: 870, bookedBy: "Design Studio", purpose: "Critique" },
+-  { id: "b5", room_id: "r5", start: 900, end: 1020, bookedBy: "Admissions", purpose: "Open house briefing" },
+-  { id: "b6", room_id: "r2", start: 1080, end: 1140, bookedBy: "Prof. Okoye", purpose: "Office hours" },
+ ];
 ```
 
 ### 8.3 The residual risk
 
 | ID | L before | I before | Score before | L after | I after | Score after | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| | | | | | | | |
-| | | | | | | | |
+| R4 | 2 | 2 | 4 | 1 | 2 | 2 | The R4 regression test passes after both functions use the shared evaluator; the complete suite passes 21/21. Invalid non-finite time is rejected by the shared rule module. |
+| R3 | 3 | 2 | 6 | 1 | 2 | 2 | `sampleData.ts` now contains one fictional room and only its bookings; the R3 regression test passes and the complete suite passes 21/21. |
 
 ### 8.4 The final run
 
 The real output of the **full** suite after both mitigations. Every test must pass.
 
 ```text
-(paste here)
+PS C:\Users\ARnur\Desktop\software enginering\se-practice\week-10\app> npx vitest run                                                  
+
+ RUN  v5.1.0 C:/Users/ARnur/Desktop/Software Enginering/se-practice/week-10/app
+
+ ✓ src/booking.test.ts (21 tests) 11ms
+   ✓ canBook() (19)
+     ✓ AC1: Interval validity, day limits, and future start times (5)
+       ✓ T02: rejects if start time is equal to current 'now' (540-570) 2ms
+       ✓ T03: rejects zero duration intervals (720-720) 0ms
+       ✓ T04: rejects reversed intervals (750-720) 0ms
+       ✓ T05: rejects intervals extending past the end of the day limit (1380-1441) 0ms
+       ✓ X1: allows intervals ending exactly at the day boundary (1380-1440) 0ms
+     ✓ AC2: Maximum duration limits (2)
+       ✓ T06: allows a request of exactly 120 minutes (720-840) 0ms
+       ✓ T07: rejects a request exceeding the 120-minute limit (720-841) 0ms
+     ✓ AC3: Room block status (1)
+       ✓ T13: rejects a valid interval if the room is blocked 0ms
+     ✓ AC4: Overlapping with existing bookings (9)
+       ✓ T01: allows booking that touches the end of an existing booking (660-720) 0ms
+       ✓ T08: allows booking that touches the start of an existing booking (570-600) 0ms
+       ✓ T09: rejects partial overlap ending inside an existing booking (630-690) 0ms
+       ✓ T10: rejects booking that entirely contains an existing booking (570-690) 0ms
+       ✓ T11: rejects booking that is entirely inside an existing booking (615-645) 0ms
+       ✓ T12: rejects booking with identical interval to an existing booking (600-660) 0ms
+       ✓ T14: allows booking when there are no existing bookings (630-690) 0ms
+       ✓ X2: rejects booking that overlaps multiple existing bookings (650-710) 0ms
+       ✓ BUG-A: allows a request that touches existing bookings on both sides (630-690) 0ms
+     ✓ AC5: Pure function constraints (2)
+       ✓ AC5: leaves the existing booking data completely unchanged 1ms
+       ✓ BUG-B: leaves bookings unchanged for an available request touching nothing (720-780) 0ms
+   ✓ R3: one-room project scope (1)
+     ✓ R3: provides exactly one fictional room 1ms
+   ✓ R4: consistent availability verdict (1)
+     ✓ R4: rejects an invalid current time in both checks 0ms
+
+ Test Files  1 passed (1)
+      Tests  21 passed (21)
+   Start at  19:11:44
+   Duration  882ms (import 40%, transform 36%, tests 13%, worker 11%)
+
 ```
 
 ---
