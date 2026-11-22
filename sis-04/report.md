@@ -332,10 +332,10 @@ PS C:\Users\ARnur\Desktop\software enginering\se-practice\sis-04\app> npx vitest
 
 | Measure | Original | Final | How I obtained it |
 | --- | --- | --- | --- |
-| Automated tests passed / total | (write here) | (write here) | (write here) |
-| Duplicated logic locations removed | (write here) | (write here) | (write here) |
-| Code structure: modules and their responsibilities | (write here) | (write here) | (write here) |
-| Remaining limitation | (write here) | (write here) | (write here) |
+| Automated tests passed / total | 19/19 | 29/29 | Read the `Tests` lines in §1.1 (baseline) and §6.3 (final). |
+| Duplicated logic locations removed | 0 | 3 | Count the three concrete locations listed in §5.3. |
+| Code structure: modules and their responsibilities | 14 source files: `App.tsx` coordinates the page; `sampleData.ts` holds rooms and a separate global booking list; booking decisions are implemented in both `booking.ts` and `utils/availability.ts`; reusable UI components, types, and time helpers are also present. | 14 source files: responsibilities are separated across `rooms.ts`, `booking.ts`, `filter.ts`, `App.tsx`, reusable UI components, shared result types, and time helpers. | Count the baseline files with `git ls-tree -r --name-only 7f70152 -- sis-04/app/src`, the final files with `git ls-files sis-04/app/src`, and compare responsibilities with §5.1. Both lists contain 14 files. |
+| Remaining limitation | Room and booking data are fictional and static. | The catalog and timetable are still fictional constants that must be edited in source to change; the app does not load live campus schedules. | Compare baseline `src/data/sampleData.ts` with final `src/rooms.ts`; the assignment also excludes live APIs and databases. |
 
 ## 8. AI evidence appendix
 
