@@ -14,13 +14,13 @@
 
 | Item | Value |
 | --- | --- |
-| Assistant (tool) | (write here) |
-| Assistant model | (write here) |
-| Starting point | (write here) |
-| Baseline commit | (write here) |
-| Language (ts or js) | (write here) |
-| Vitest version | (write here) |
-| Where I ran the tests | (write here) |
+| Assistant (tool) | Codex |
+| Assistant model | Codex 6 Luna |
+| Starting point | week-08 |
+| Baseline commit | 7f70152 |
+| Language (ts or js) | ts |
+| Vitest version | v5.1.0 |
+| Where I ran the tests | my computer |
 
 ### 1.1 Baseline run
 
@@ -75,7 +75,22 @@ PS C:\Users\ARnur\Desktop\software enginering\se-practice\sis-04\app> npx vitest
      they do. A tree is fine:  src/App.tsx — the page, holds the rooms and the form … -->
 
 ```text
-(paste here)
+app/src/App.tsx — Main page: holds selected room and time inputs, runs canBook/checkAvailability, and renders the room selector, timeline, and result.
+app/src/booking.ts — canBook() applies the core interval, future-time, 120-minute, blocked-room, and overlap rules.
+app/src/utils/availability.ts — checkAvailability() builds an Available/Unavailable result and explanatory reasons using a room and its bookings.
+app/src/utils/time.ts — Time constants and helpers for parsing, formatting, and calculating time values.
+app/src/data/sampleData.ts — Fictional room catalog and bookings; bookings refer to rooms by room_id. Rooms currently have no equipment field.
+app/src/types.ts — Shared TypeScript definitions for Room, Booking, and CheckResult.
+app/src/components/RoomSelector.tsx — Displays the room choices, including building, capacity, and blocked status.
+app/src/components/TimeInput.tsx — Reusable labeled time input with validation hints.
+app/src/components/Timeline.tsx — Displays the selected room’s existing bookings and proposed interval.
+app/src/components/ResultBanner.tsx — Displays the pending prompt or availability decision and its reasons.
+app/src/booking.test.ts — Vitest tests for canBook(), including AC1–AC5 and boundary cases.
+app/src/main.tsx — React entry point; mounts App and imports the global stylesheet.
+app/src/index.css — Global styles and Tailwind directives.
+app/package.json — Project scripts and dependencies, including Vite, React, TypeScript, and Vitest.
+app/index.html — Vite HTML entry point containing the root element for the React app.
+app/vite.config.ts, app/tsconfig*.json, app/tailwind.config.js, app/postcss.config.js, app/eslint.config.js — Build, TypeScript, styling, and lint configuration.
 ```
 
 ### 2.2 The context message as sent
@@ -84,7 +99,43 @@ PS C:\Users\ARnur\Desktop\software enginering\se-practice\sis-04\app> npx vitest
      (no login, payments, live APIs or database; fictional data only). Unedited. -->
 
 ```text
-(paste here)
+I’m working on SIS #04, evolving my Week 08 Smart Campus Room Availability Checker. Please analyze the current code and suggest maintainability risks with specific file/function references, then give me a prioritized plan of small, safe steps. Do not write or change any code yet, and do not propose a full rewrite.
+
+Repository map:
+- app/src/App.tsx — Main page: holds selected room and time inputs, runs canBook/checkAvailability, and renders the room selector, timeline, and result.
+- app/src/booking.ts — canBook() applies the core interval, future-time, 120-minute, blocked-room, and overlap rules.
+- app/src/utils/availability.ts — checkAvailability() builds an Available/Unavailable result and explanatory reasons using a room and its bookings.
+- app/src/utils/time.ts — Time constants and helpers for parsing, formatting, and calculating time values.
+- app/src/data/sampleData.ts — Fictional room catalog and bookings; bookings refer to rooms by room_id. Rooms currently have no equipment field.
+- app/src/types.ts — Shared TypeScript definitions for Room, Booking, and CheckResult.
+- app/src/components/RoomSelector.tsx — Displays the room choices, including building, capacity, and blocked status.
+- app/src/components/TimeInput.tsx — Reusable labeled time input with validation hints.
+- app/src/components/Timeline.tsx — Displays the selected room’s existing bookings and proposed interval.
+- app/src/components/ResultBanner.tsx — Displays the pending prompt or availability decision and its reasons.
+- app/src/booking.test.ts — Vitest tests for canBook(), including AC1–AC5 and boundary cases.
+- app/src/main.tsx — React entry point; mounts App and imports the global stylesheet.
+- app/src/index.css — Global styles and Tailwind directives.
+- app/package.json — Project scripts and dependencies, including Vite, React, TypeScript, and Vitest.
+- app/index.html — Vite HTML entry point containing the root element for the React app.
+- app/vite.config.ts, app/tsconfig*.json, app/tailwind.config.js, app/postcss.config.js, app/eslint.config.js — Build, TypeScript, styling, and lint configuration.
+
+Acceptance criteria to preserve:
+AC1 Reject start ≥ end and requests in the past.
+AC2 Enforce the maximum allowed duration (120 minutes).
+AC3 Reject a blocked room.
+AC4 Reject overlaps; allow bookings that only touch at endpoints.
+AC5 Return Available / Unavailable without changing booking data.
+AC6 Clear, responsive feedback on desktop and mobile.
+
+New requirements:
+F1 Capacity filter: room capacity must be greater than or equal to the requested attendees.
+F2 Equipment filter: the room must contain ALL selected required items.
+F3 A blocked room cannot be reported as available.
+F4 Show a clear empty state when no rooms match.
+F5 Changing the selected room must refresh the availability result appropriately. The availability check must use the selected room’s own bookings.
+
+Constraints:
+Use fictional room and booking data only. No login, payments, live APIs, or database. The project uses TypeScript and React. The assignment requires a catalog of at least four rooms, with each room having an ID, name, capacity, equipment list, blocked status, and its own bookings. Please identify risks based on the mapped starting code, distinguish observed evidence from hypotheses, and propose small steps in priority order. Do not provide implementation code yet.
 ```
 
 ## 3. Codebase analysis (Task 1)
@@ -97,24 +148,30 @@ PS C:\Users\ARnur\Desktop\software enginering\se-practice\sis-04\app> npx vitest
 
 | # | Risk | Where (file / function) | Evidence | Priority |
 | --- | --- | --- | --- | --- |
-| 1 | (write here) | (write here) | (write here) | High / Medium / Low |
-| 2 | (write here) | (write here) | (write here) | High / Medium / Low |
-| 3 | (write here) | (write here) | (write here) | High / Medium / Low |
+| 1 | The availability decision and its explanation are computed by separate functions, so their rules can diverge. | `src/App.tsx`, `onCheck()`; `src/utils/availability.ts`, `checkAvailability()` | `onCheck()` calls `canBook()` for the decision and `checkAvailability()` for the reasons. `checkAvailability()` independently checks interval validity, time, duration, blocked status, and overlaps. | High |
+| 2 | The room model does not yet represent required equipment, so the new equipment filter has no data to use. | `src/types.ts`, `Room`; `src/data/sampleData.ts`, `rooms` | `Room` has no `equipment` property, and none of the five sample room records supplies an equipment list. | High |
+| 3 | The selected room's bookings are prepared in two different ways, which creates a risk that the decision and explanation use different booking sets. | `src/App.tsx`, `onCheck()` | `canBook()` receives bookings filtered by `room_id` and mapped to `{ start, end }`; `checkAvailability()` receives the full `bookings` array and filters it internally. | High |
+| 4 | Adding filter controls and empty-state behavior could make the page component harder to maintain. | `src/App.tsx`, `App()` | `App()` already owns room and time state, input validation, result invalidation, both availability calls, and composition of the selector, timeline, and result. | Medium |
+| 5 | The existing automated suite does not cover the new catalog filtering and room-switching requirements. | `src/booking.test.ts` | The file tests `canBook()` rules and boundaries; it has no tests for capacity, equipment, an empty filtered list, or checking different rooms. | Medium |
 
 ### 3.2 Improvement plan — before editing
 
 <!-- Numbered, in the order you will do it, smallest safe step first. Written BEFORE you change
      code: the commit that adds this section comes before the commit that changes app/src. -->
 
-1. (write here)
-2. (write here)
-3. (write here)
+1. Add test cases for the new filtering and selected-room behavior, using fixed room fixtures and expected results derived from F1–F5; keep the existing AC1–AC5 tests as regression coverage.
+2. Add `equipment` to the `Room` type and give every fictional room an equipment list without changing its existing ID, capacity, or blocked status.
+3. Implement the pure `filterRooms()` function and test capacity ≥ attendees, inclusion of all selected equipment, and no matches.
+4. Implement the required `checkRoom(rooms, roomId, request)` in `src/booking.ts`; make it call `canBook()` with only the selected room's own blocked status and bookings, and return false for an unknown ID.
+5. Connect the filtered catalog and attendee/equipment controls in the UI. Show a clear empty state, keep the selected ID valid when filters change, and clear a stale result when relevant inputs change.
+6. Remove the duplicate availability decision path in `App`: use the required booking functions as the source of the decision and keep any explanation consistent with that result. Preserve the timeline and result components where practical.
+7. Run the full Vitest suite after each step, then verify the UI at desktop and narrow phone widths and capture the required evidence screenshots.
 
 ### 3.3 One AI suggestion I rejected or modified
 
 | Suggestion (as the assistant made it) | Decision | Why — with the AC, F-rule, test or file behind it |
 | --- | --- | --- |
-| (write here) | Rejected / Modified | (write here) |
+| The suggestion to replace the two availability calls with one domain-level check returning both a decision and reasons. | Modified | The brief fixes `canBook()` and `checkRoom()` as boolean checks, and `checkRoom()` must call `canBook()`. I will keep those required signatures and make `canBook()` the single source for the booking decision; any UI explanation must agree with that result rather than independently reimplementing AC1–AC5. |
 
 ## 4. Feature extension (Task 2)
 
