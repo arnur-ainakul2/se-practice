@@ -13,13 +13,13 @@ grader find your answers by them. You can add rows to any table, but never remov
 
 | | |
 | --- | --- |
-| Assistant I reviewed with (tool) |Gemini|
-| Exact model (with its version, or `not displayed`) | |
-| Where the assistant read the project (Bolt.new / Claude Code / Cursor / Copilot / chat with pasted files) | |
+| Assistant I reviewed with (tool) |Codex|
+| Exact model (with its version, or `not displayed`) |Codex 6 Luna|
+| Where the assistant read the project (Bolt.new / Claude Code / Cursor / Copilot / chat with pasted files) |Codex|
 | Starting point (`week-08` or `week-07`) |week-08|
 | Baseline commit — the checkpoint of Part 0 |b48a9d8|
 | Where I ran the tests (Bolt terminal / my computer / Codespace) |my computer|
-| Vitest version (the `RUN  v…` line of a run) | |
+| Vitest version (the `RUN  v…` line of a run) |v5.1.0|
 
 ---
 
@@ -763,10 +763,18 @@ The diff I approved (`git diff`):
 
 ```text
 diff --git a/week-10/app/src/data/sampleData.ts b/week-10/app/src/data/sampleData.ts
-index 9490c21..03eb186 100644
+index 9490c21..6dcd526 100644
 --- a/week-10/app/src/data/sampleData.ts
 +++ b/week-10/app/src/data/sampleData.ts
-@@ -8,42 +8,9 @@ export const rooms: Room[] = [
+@@ -1,5 +1,6 @@
+ import type { Room, Booking } from "@/types";
+ 
++// This project intentionally models one fictional room.
+ export const rooms: Room[] = [
+   {
+     id: "r1",
+@@
+@@ -8,42 +9,9 @@ export const rooms: Room[] = [
      id: "r1",
      name: "Aurora Hall 101",
      building: "North Wing",
@@ -879,12 +887,12 @@ its files and its commands.
 
 | Rule | What I require |
 | --- | --- |
-| Isolation | |
-| Permitted files | |
-| Commands | |
-| Prohibited actions | |
-| Required evidence | |
-| Before merging or deploying | |
+| Isolation | Work in a separate branch or worktree based on the current `week-10` branch. Do not edit the user's active branch; do not access or copy credentials. |
+| Permitted files | For an approved task, edit only the relevant files under `app/src/` and their tests in `app/src/`; update `lab-report.md` only for evidence about that task. Do not change `provided/AGENTS.md`, checker scripts, or unrelated project folders. |
+| Commands | From `week-10/app/`, use `npm test`, `npm run lint`, `npm run typecheck`, and `npm run build` as applicable. `npm run test:unit` is not defined in `package.json` and must not be reported as a successful check. |
+| Prohibited actions | Do not use real room schedules or personal data; add login, a database, or dependencies; commit secrets; change acceptance criteria; deploy externally; push, merge, or delete branches without human authorization. |
+| Required evidence | Provide a concise summary of changed files, the reviewed diff, actual output for each command run, build output, and a note for each check not run. Update the relevant risk-register entry and residual score with evidence. |
+| Before merging or deploying | Require explicit human review and approval of the diff and evidence before merging. External deployment is prohibited for this project; do not deploy. |
 
 ### 9.2 Optional — the deck's checklist prompt (not graded)
 
@@ -896,13 +904,17 @@ Use the same IDs as `known_fails` in `submission.yml`. Write `none` if the run i
 
 | Check | Why it stays |
 | --- | --- |
-| | |
+| A3 | `AGENTS.md` still names `npm run test:unit`, which is absent from `package.json`, and `npx netlify`, which is not a project dependency. R1 was initially rated moderate impact (I=2) because the missing test script can block agent verification but does not itself change booking data; the separate deployment instruction is the more serious R2 concern. These instructions remain because the §6.2 corrections marked `modify` were not applied. |
+| C1 | `AGENTS.md` still asks agents to use real room names and timetable data and does not require one fictional room. The app fixtures now contain one room, but the playbook still conflicts with the constraint; no real timetable data was confirmed in the inspected fixtures. |
+| C2 | `AGENTS.md` still permits adding a Supabase database and login, contrary to the no-database/no-login scope. This is part of the unresolved agent-operations risk R2; its modification was not approved/applied. |
+| C3 | `AGENTS.md` still says endpoint-touching requests count as overlaps. That contradicts AC4 and could cause an agent to reject a valid booking request that touches an existing booking only at an endpoint. |
+| C5 | `AGENTS.md` still directs agents to run `npx netlify deploy --prod`, permitting an external production deployment. This remains unresolved under R2 because the deployment prohibition marked `modify` was not applied. |
 
 ---
 
 ## 10. Release decision and conclusion
 
-**Decision:** GO / CONDITIONAL / NO-GO
+**Decision:** NO-GO
 
 <!-- Keep one word above. GO is not allowed while any confirmed risk still scores 6 or more.
      Then 80-150 words, in your own words, without the assistant: why this decision, from the
@@ -913,4 +925,4 @@ Use the same IDs as `known_fails` in `submission.yml`. Write `none` if the run i
      2 x 2 = 4) is open, owned by me, controlled by the AC1 test. The UI was checked at two widths,
      but no test covers App.tsx, so a regression there would be invisible." -->
 
-<!-- Write your conclusion below this line -->
+R1 remains a confirmed risk at 3 × 2 = 6 because `AGENTS.md` still names the missing `npm run test:unit` command. R2 is also confirmed at 2 × 3 = 6: the playbook still permits a database and login and tells an agent to deploy externally. These unresolved instructions block a GO decision. R3 and R4 were mitigated, and the full suite passed all 21 tests after those code changes. However, the last audit run still reported B2 and the playbook failures, and the manual desktop and mobile checks showed timeline labels overlapping, so AC6 needs more work. I have not rerun the checker after the latest report edits. I would keep the release at NO-GO until the playbook and export are corrected, the timeline feedback is clear, and the checks are rerun.

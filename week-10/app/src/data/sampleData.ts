@@ -1,5 +1,6 @@
 import type { Room, Booking } from "@/types";
 
+// This project intentionally models one fictional room.
 export const rooms: Room[] = [
   {
     id: "r1",
