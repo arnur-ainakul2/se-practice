@@ -374,20 +374,81 @@ index b786d88..79e5d46 100644
 The risk it covers: **R?**. The real run, with the new test failing:
 
 ```text
-(paste here)
+PS C:\Users\ARnur\Desktop\software enginering\se-practice\week-10\app> npx vitest run 
+
+ RUN  v5.1.0 C:/Users/ARnur/Desktop/Software Enginering/se-practice/week-10/app
+
+ ❯ src/booking.test.ts (20 tests | 1 failed) 24ms
+   ✓ canBook() (19)
+     ✓ AC1: Interval validity, day limits, and future start times (5)
+       ✓ T02: rejects if start time is equal to current 'now' (540-570) 2ms
+       ✓ T03: rejects zero duration intervals (720-720) 0ms
+       ✓ T04: rejects reversed intervals (750-720) 0ms
+       ✓ T05: rejects intervals extending past the end of the day limit (1380-1441) 0ms
+       ✓ X1: allows intervals ending exactly at the day boundary (1380-1440) 0ms
+     ✓ AC2: Maximum duration limits (2)
+       ✓ T06: allows a request of exactly 120 minutes (720-840) 0ms
+       ✓ T07: rejects a request exceeding the 120-minute limit (720-841) 0ms
+     ✓ AC3: Room block status (1)
+       ✓ T13: rejects a valid interval if the room is blocked 0ms
+     ✓ AC4: Overlapping with existing bookings (9)
+       ✓ T01: allows booking that touches the end of an existing booking (660-720) 0ms
+       ✓ T08: allows booking that touches the start of an existing booking (570-600) 0ms
+       ✓ T09: rejects partial overlap ending inside an existing booking (630-690) 0ms
+       ✓ T10: rejects booking that entirely contains an existing booking (570-690) 0ms
+       ✓ T11: rejects booking that is entirely inside an existing booking (615-645) 0ms
+       ✓ T12: rejects booking with identical interval to an existing booking (600-660) 0ms
+       ✓ T14: allows booking when there are no existing bookings (630-690) 0ms
+       ✓ X2: rejects booking that overlaps multiple existing bookings (650-710) 0ms
+       ✓ BUG-A: allows a request that touches existing bookings on both sides (630-690) 0ms
+     ✓ AC5: Pure function constraints (2)
+       ✓ AC5: leaves the existing booking data completely unchanged 1ms
+       ✓ BUG-B: leaves bookings unchanged for an available request touching nothing (720-780) 0ms
+   ❯ R3: one-room project scope (1)
+     × R3: provides exactly one fictional room 12ms
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/booking.test.ts > R3: one-room project scope > R3: provides exactly one fictional room
+AssertionError: expected [ { id: 'r1', …(4) }, …(4) ] to have a length of 1 but got 5
+
+- Expected
++ Received
+
+- 1
++ 5
+
+ ❯ src/booking.test.ts:150:19
+    148| describe("R3: one-room project scope", () => {
+    149|   it("R3: provides exactly one fictional room", () => {
+    150|     expect(rooms).toHaveLength(1);
+       |                   ^
+    151|   });
+    152| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+   Start at  17:57:42
+   Duration  840ms (import 36%, tests 26%, transform 22%, worker 15%)
+
 ```
 
 ### 7.2 The manual UI check
 
 | View | Width | What I checked | Result | Screenshot |
 | --- | --- | --- | --- | --- |
-| Desktop | | | | `evidence/ui-desktop.png` |
-| Mobile | | | | `evidence/ui-mobile.png` |
+| Desktop | 1920 px screenshot; browser viewport width not recorded | Checked the timeline's time labels, schedule title, booking markers, legend, and availability feedback. | fail — timeline time labels overlap the schedule title, and edge labels appear duplicated. | `evidence/ui-desktop.png` |
+| Mobile | Phone-sized view; exact CSS viewport width not recorded | Checked the timeline labels, booking markers, legend, and availability button at phone width. | fail — time labels overlap the schedule title; booking labels are cramped in the narrow timeline. | `evidence/ui-mobile.png` |
 
 ### 7.3 Tests and checks I did not run
 
 <!-- Name each one and why. "None" only if it is true. -->
--
+- The full, unfiltered `npx vitest run` was not run after adding the R3 regression test. I ran only `npx vitest run src/booking.test.ts -t 'R3: provides exactly one fictional room'` to capture the pre-mitigation failure; Vitest skipped the other 19 tests in that run.
+- `npm run build`, `npm run lint`, and `npm run typecheck` were not rerun after adding the R3 test. Build and lint had been run earlier for the baseline (their output is in §2.1); typecheck was not run.
+- No automated browser, component, or integration UI test was run. Desktop and phone layouts were inspected manually from the supplied screenshots and the timeline label overlap was visible in both.
 
 ---
 

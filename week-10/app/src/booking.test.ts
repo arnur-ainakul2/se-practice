@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { canBook, type CanBookInput } from "./booking"; // Adjust path if necessary
+import { rooms } from "@/data/sampleData";
 
 describe("canBook()", () => {
   // Fresh fixtures factory to prevent mutation bleed and guarantee independent tests
@@ -141,5 +142,11 @@ describe("canBook()", () => {
       expect(canBook(input)).toBe(true);
       expect(input.bookings).toEqual(bookingsBefore);
     });
+  });
+});
+
+describe("R3: one-room project scope", () => {
+  it("R3: provides exactly one fictional room", () => {
+    expect(rooms).toHaveLength(1);
   });
 });
