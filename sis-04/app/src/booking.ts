@@ -9,6 +9,10 @@ export interface CanBookInput {
   bookings: { start: number; end: number }[];
 }
 
+export function isValidInterval(start: number, end: number): boolean {
+  return 0 <= start && start < end && end <= MINUTES_PER_DAY;
+}
+
 export function canBook({ start, end, now, blocked, bookings }: {
   start: number;
   end: number;
@@ -16,7 +20,7 @@ export function canBook({ start, end, now, blocked, bookings }: {
   blocked: boolean;
   bookings: { start: number; end: number }[];
 }): boolean {
-  if (!(0 <= start && start < end && end <= MINUTES_PER_DAY)) return false;
+  if (!isValidInterval(start, end)) return false;
   if (!(start > now)) return false;
   if (end - start > MAX_DURATION_MINUTES) return false;
   if (blocked) return false;

@@ -1,5 +1,42 @@
-' diagrams/after.puml — the same view of your FINAL code. It must show rooms, booking, filter
-' and the UI (App and any components), with an arrow for each import. Replace this stub.
-'
 @startuml
+title Smart Campus Room Checker — refactored structure
+skinparam componentStyle rectangle
+
+package "app/src — final modules" {
+  [main.tsx] as Main
+  [App.tsx] as App
+  [rooms.ts] as Rooms
+  [booking.ts] as Booking
+  [filter.ts] as Filter
+  [types.ts] as Types
+  [utils/time.ts] as Time
+  [components/RoomSelector.tsx] as RoomSelector
+  [components/TimeInput.tsx] as TimeInput
+  [components/Timeline.tsx] as Timeline
+  [components/ResultBanner.tsx] as ResultBanner
+  [index.css] as CSS
+}
+
+Main --> App : imports
+Main --> CSS : imports
+
+App --> Rooms : imports
+App --> Booking : imports
+App --> Filter : imports
+App --> Types : imports
+App --> Time : imports
+App --> RoomSelector : imports
+App --> TimeInput : imports
+App --> Timeline : imports
+App --> ResultBanner : imports
+
+Booking --> Rooms : imports
+Booking --> Time : imports
+Filter --> Rooms : imports
+RoomSelector --> Rooms : imports
+Timeline --> Rooms : imports
+Timeline --> Time : imports
+ResultBanner --> Types : imports
+ResultBanner --> Time : imports
+
 @enduml

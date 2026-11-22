@@ -1,12 +1,43 @@
-' diagrams/before.puml — the modules and components of your STARTING POINT and what depends on what.
-' Replace this stub. A component diagram is enough, for example:
-'
-'   @startuml
-'   component "App.tsx" as App
-'   component "booking.ts" as Booking
-'   App --> Booking : canBook()
-'   note right of App : rooms, times and the result all live here
-'   @enduml
-'
 @startuml
+title Smart Campus Room Checker — Week 08 baseline
+skinparam componentStyle rectangle
+
+package "app/src — baseline" {
+  [main.tsx] as Main
+  [App.tsx] as App
+  [data/sampleData.ts] as SampleData
+  [booking.ts] as Booking
+  [utils/availability.ts] as Availability
+  [utils/time.ts] as Time
+  [types.ts] as Types
+  [components/RoomSelector.tsx] as RoomSelector
+  [components/TimeInput.tsx] as TimeInput
+  [components/Timeline.tsx] as Timeline
+  [components/ResultBanner.tsx] as ResultBanner
+  [index.css] as CSS
+}
+
+Main --> App : imports
+Main --> CSS : imports
+
+App --> SampleData : imports
+App --> Booking : imports
+App --> Availability : imports
+App --> Time : imports
+App --> Types : imports
+App --> RoomSelector : imports
+App --> TimeInput : imports
+App --> Timeline : imports
+App --> ResultBanner : imports
+
+SampleData --> Types : imports
+Booking --> Time : imports
+Availability --> Types : imports
+Availability --> Time : imports
+RoomSelector --> Types : imports
+Timeline --> Types : imports
+Timeline --> Time : imports
+ResultBanner --> Types : imports
+ResultBanner --> Time : imports
+
 @enduml

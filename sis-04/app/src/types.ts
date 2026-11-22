@@ -1,12 +1,3 @@
-export interface Booking {
-  id: string;
-  room_id: string;
-  start: number; // minutes since midnight
-  end: number; // minutes since midnight
-  bookedBy: string;
-  purpose: string;
-}
-
 export type Decision = "available" | "unavailable" | "pending";
 
 export interface CheckResult {

@@ -7,34 +7,34 @@ interface Props {
 }
 
 export default function Timeline({ room, proposed }: Props) {
-  const marker = (label: string, leftPct: number, cls: string, key: string) => (
+  const marker = (leftPct: number, cls: string, key: string) => (
     <div
       key={key}
       className={`absolute top-0 h-full rounded-md ${cls}`}
       style={{ left: `${leftPct}%`, width: 0.5, minWidth: 1 }}
-      title={label}
-    >
-      <span className="absolute -top-5 -translate-x-1/2 whitespace-nowrap text-[10px] text-slate-400">
-        {label}
-      </span>
-    </div>
+    />
   );
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between text-xs text-slate-500">
-        <span>00:00</span>
         <span className="font-medium text-slate-700">
           Today's schedule — {room.name}
         </span>
-        <span>24:00</span>
+      </div>
+
+      <div className="relative h-4 text-[10px] text-slate-400" aria-hidden="true">
+        <span className="absolute left-0">00:00</span>
+        <span className="absolute left-1/4 -translate-x-1/2">06:00</span>
+        <span className="absolute left-1/2 -translate-x-1/2">12:00</span>
+        <span className="absolute left-3/4 -translate-x-1/2">18:00</span>
+        <span className="absolute right-0">24:00</span>
       </div>
 
       <div className="relative h-10 w-full overflow-visible rounded-lg border border-slate-200 bg-slate-50">
         {/* hour ticks */}
         {Array.from({ length: 25 }).map((_, h) =>
           marker(
-            h % 6 === 0 ? `${String(h).padStart(2, "0")}:00` : "",
             (h / 24) * 100,
             "bg-slate-200",
             `tick-${h}`

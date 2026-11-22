@@ -203,10 +203,13 @@ The catalog contains five fictional rooms with capacities from 12 to 120 seats. 
 
 | Module or component | Responsibility |
 | --- | --- |
-| `src/rooms.ts` | (write here) |
-| `src/booking.ts` | (write here) |
-| `src/filter.ts` | (write here) |
-| (write here) | (write here) |
+| `src/rooms.ts` | Defines the `Room` type and the fictional `ROOMS` catalog. Each room contains its own equipment, blocked status, and bookings. |
+| `src/booking.ts` | Owns booking rules: `canBook()` checks AC1–AC5, `checkRoom()` selects the room and delegates to `canBook()`, and `isValidInterval()` shares the interval rule with the timeline UI. |
+| `src/filter.ts` | Implements the pure `filterRooms()` function for capacity and all selected equipment. |
+| `src/App.tsx` | Holds UI state and composes the page; imports the catalog, filter, and booking functions instead of defining room or availability rules. |
+| `src/components/RoomSelector.tsx` | Presents matching rooms and their capacity, equipment, and blocked label. |
+| `src/components/Timeline.tsx` | Draws the selected room's bookings and the requested interval. |
+| `src/components/TimeInput.tsx`, `src/components/ResultBanner.tsx` | Render the time fields and the availability feedback. |
 
 ### 5.2 Design decisions
 
@@ -215,8 +218,9 @@ The catalog contains five fictional rooms with capacities from 12 to 120 seats. 
 
 | Decision | Alternative I did not take | Why |
 | --- | --- | --- |
-| (write here) | (write here) | (write here) |
-| (write here) | (write here) | (write here) |
+| Keep blocked rooms visible with a Blocked label. | Hide blocked rooms from the filtered list. | Showing them lets students see why a room cannot be reported available; `checkRoom()` still rejects them (F3), covered by the F3 test. |
+| Store each room's bookings inside its catalog record. | Keep a separate global booking list keyed by room ID. | `checkRoom()` can pass the chosen room's own bookings directly to `canBook()`, reducing the chance of checking another room's schedule (F5). |
+| Keep `filterRooms()` as a pure function in its own module. | Filter inside `App.tsx`. | The F1/F2 behavior is independently testable and the page stays focused on presentation. |
 
 ### 5.3 Duplication removed
 
@@ -224,7 +228,9 @@ The catalog contains five fictional rooms with capacities from 12 to 120 seats. 
 
 | Before (file / function, what was repeated) | After (where it lives now) |
 | --- | --- |
-| (write here) | (write here) |
+| `src/utils/availability.ts`, `checkAvailability()` repeated interval, time, duration, blocked-room, and overlap checks already handled in `src/booking.ts`, `canBook()`. | Removed the duplicate module; `checkRoom()` delegates the availability decision to `canBook()`. |
+| `src/App.tsx`, `onCheck()` called `canBook()` and `checkAvailability()` separately for the same request. | `src/App.tsx` now calls `checkRoom()` for one decision and displays feedback from that result. |
+| `src/App.tsx` checked `startMin < endMin` when preparing the timeline interval, duplicating part of AC1. | The page calls `isValidInterval()` from `src/booking.ts`, which is also used by `canBook()`. |
 
 ## 6. Automated tests (Task 4)
 

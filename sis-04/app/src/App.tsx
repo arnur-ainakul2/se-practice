@@ -3,7 +3,7 @@ import { Building2, Clock3, PlayCircle } from "lucide-react";
 import type { CheckResult } from "@/types";
 import { ROOMS } from "@/rooms";
 import { filterRooms } from "@/filter";
-import { checkRoom } from "./booking";
+import { checkRoom, isValidInterval } from "./booking";
 import {
   labelToMinutes,
   minutesToLabel,
@@ -105,7 +105,9 @@ function App() {
   };
 
   const proposed =
-    startMin !== null && endMin !== null && startMin < endMin
+    startMin !== null &&
+    endMin !== null &&
+    isValidInterval(startMin, endMin)
       ? {
           start: startMin,
           end: endMin,
